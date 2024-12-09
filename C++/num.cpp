@@ -3,15 +3,14 @@
 int main() {
     //Exercise 1
 
-    setlocale(LC_ALL, "Ukrainian");
-
+ 
     int number;
-    std::cout << "Введiть шестизначне число: ";
+    std::cout << "Enter a six-digit number: ";
     std::cin >> number;
 
     
     if (number < 100000 || number > 999999) {
-        std::cout << "Помилка: введене число не є шестизначним!" << std::endl;
+        std::cout << "You did not enter a six-digit number." << std::endl;
         return 1;
     }
 
@@ -21,10 +20,10 @@ int main() {
 
    
     if (sumnumber == sumnumber) {
-        std::cout << "Число є щасливим!" << std::endl;
+        std::cout << "Lucky number!" << std::endl;
     }
     else {
-        std::cout << "Число не є щасливим." << std::endl;
+        std::cout << "The number is not lucky." << std::endl;
     }
 
 
@@ -67,4 +66,3 @@ int main() {
 
     return 0;
 }
-
