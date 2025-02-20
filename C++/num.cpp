@@ -1,68 +1,90 @@
 #include <iostream>
 
+class Contact {
+private:
+    std::string* name;
+    std::string homePhone;
+    std::string workPhone;
+    std::string mobilePhone;
+    std::string additionalInfo;
+
+public:
+    Contact(const std::string& name, const std::string& homePhone, const std::string& workPhone, 
+            const std::string& mobilePhone, const std::string& additionalInfo)
+    {
+        this->name = new std::string(name);
+        this->homePhone = homePhone;
+        this->workPhone = workPhone;
+        this->mobilePhone = mobilePhone;
+        this->additionalInfo = additionalInfo;
+    }
+    
+    ~Contact() {
+        delete name;
+    }
+    
+    void display() const {
+        std::cout << "Name: " << *name << "\nHome Phone: " << homePhone
+                  << "\nWork Phone: " << workPhone << "\nMobile Phone: " << mobilePhone
+                  << "\nAdditional Info: " << additionalInfo << "\n" << std::endl;
+    }
+    
+    std::string getName() const { return *name; }
+};
+
+class PhoneBook {
+private:
+    Contact* contacts[100];
+    int count;
+
+public:
+    PhoneBook() : count(0) {}
+    
+    void addContact(Contact* contact) {
+        if (count < 100) {
+            contacts[count++] = contact;
+        }
+    }
+    
+    void deleteContact(const std::string& name) {
+        for (int i = 0; i < count; i++) {
+            if (contacts[i]->getName() == name) {
+                delete contacts[i];
+                for (int j = i; j < count - 1; j++) {
+                    contacts[j] = contacts[j + 1];
+                }
+                count--;
+                return;
+            }
+        }
+    }
+    
+    void searchContact(const std::string& name) const {
+        for (int i = 0; i < count; i++) {
+            if (contacts[i]->getName() == name) {
+                contacts[i]->display();
+                return;
+            }
+        }
+        std::cout << "Contact not found." << std::endl;
+    }
+    
+    void displayAll() const {
+        for (int i = 0; i < count; i++) {
+            contacts[i]->display();
+        }
+    }
+    
+    ~PhoneBook() {
+        for (int i = 0; i < count; i++) {
+            delete contacts[i];
+        }
+    }
+};
+
 int main() {
-    //Exercise 1
-
- 
-    int number;
-    std::cout << "Enter a six-digit number: ";
-    std::cin >> number;
-
-    
-    if (number < 100000 || number > 999999) {
-        std::cout << "You did not enter a six-digit number." << std::endl;
-        return 1;
-    }
-
-    
-    int sumnumber = (number / 100000) + (number / 10000 % 10) + (number / 1000 % 10);
-    int sumnumber = (number / 100 % 10) + (number / 10 % 10) + (number % 10);
-
-   
-    if (sumnumber == sumnumber) {
-        std::cout << "Lucky number!" << std::endl;
-    }
-    else {
-        std::cout << "The number is not lucky." << std::endl;
-    }
-
-
-//Exercise 2
-    int number;
-
-    std::cout << "Enter four-digit number: ";
-    std::cin >> number;
-
-    if (number < 1000 || number > 9999) {
-        std::cout << "You did not enter a four-digit number." << std::endl;
-        return 1;
-    }
-
-    int num1 = number / 1000;
-    int num2 = (number / 100) % 10;
-    int num3 = (number / 10) % 10;
-    int num4 = number % 10;
-
-    int newNumber = num2 * 1000 + num1 * 100 + num4 * 10 + num3;
-
-    std::cout << "New number: " << newNumber << std::endl;
-
-    //Exercise 3
-   int num1, Max_num;
-
-   std::cout << "Enter first number: ";
-   std::cin >> num1;
-   Max_num = num1;
-
-
-   for (int i = 1; i < 7; ++i) {
-       std::cout << "Enter " << i + 1 << " number: ";
-       std::cin >> num1;
-       if (num1 > Max_num) {
-           Max_num = num1;
-       }
-   }
-   std::cout << "Max number :" << std::endl;
-
+    PhoneBook phoneBook;
+    phoneBook.addContact(new Contact("John Doe", "123-456", "987-654", "555-555", "Friend"));
+    phoneBook.displayAll();
     return 0;
 }
