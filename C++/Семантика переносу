@@ -1,0 +1,121 @@
+#include <iostream>
+
+class String {
+private:
+    char* data;
+    size_t length;
+public:
+    String(const char* str = "") {
+        length = 0;
+        while (str[length] != '\0') ++length;
+        data = new char[length + 1];
+        for (size_t i = 0; i <= length; ++i) data[i] = str[i];
+    }
+    
+    ~String() { delete[] data; }
+    
+    String(const String& other) {
+        length = other.length;
+        data = new char[length + 1];
+        for (size_t i = 0; i <= length; ++i) data[i] = other.data[i];
+    }
+    
+    String(String&& other) noexcept : data(other.data), length(other.length) {
+        other.data = nullptr;
+        other.length = 0;
+    }
+    
+    String& operator=(String&& other) noexcept {
+        if (this != &other) {
+            delete[] data;
+            data = other.data;
+            length = other.length;
+            other.data = nullptr;
+            other.length = 0;
+        }
+        return *this;
+    }
+    
+    void print() const { std::cout << data << std::endl; }
+};
+#include <iostream>
+
+class Array {
+private:
+    int* data;
+    size_t size;
+public:
+    Array(size_t sz) : size(sz), data(new int[sz]()) {}
+    
+    ~Array() { delete[] data; }
+    
+    Array(const Array& other) : size(other.size), data(new int[other.size]) {
+        for (size_t i = 0; i < size; ++i) data[i] = other.data[i];
+    }
+    
+    Array(Array&& other) noexcept : size(other.size), data(other.data) {
+        other.data = nullptr;
+        other.size = 0;
+    }
+    
+    Array& operator=(Array&& other) noexcept {
+        if (this != &other) {
+            delete[] data;
+            data = other.data;
+            size = other.size;
+            other.data = nullptr;
+            other.size = 0;
+        }
+        return *this;
+    }
+};
+#include <iostream>
+
+class Student {
+private:
+    String name;
+    Array grades;
+public:
+    Student(const char* name, size_t gradeCount) : name(name), grades(gradeCount) {}
+    
+    Student(Student&& other) noexcept : name(std::move(other.name)), grades(std::move(other.grades)) {}
+    
+    Student& operator=(Student&& other) noexcept {
+        if (this != &other) {
+            name = std::move(other.name);
+            grades = std::move(other.grades);
+        }
+        return *this;
+    }
+    
+    void print() const { name.print(); }
+};
+#include <iostream>
+
+class Student {
+private:
+    String name;
+    Array grades;
+public:
+    Student(const char* name, size_t gradeCount) : name(name), grades(gradeCount) {}
+    
+    Student(Student&& other) noexcept : name(std::move(other.name)), grades(std::move(other.grades)) {}
+    
+    Student& operator=(Student&& other) noexcept {
+        if (this != &other) {
+            name = std::move(other.name);
+            grades = std::move(other.grades);
+        }
+        return *this;
+    }
+    
+    void print() const { name.print(); }
+};
+
+int main() {
+    Student s1("John Doe", 5);
+    s1.print();
+    Student s2 = std::move(s1);
+    s2.print();
+    return 0;
+}
