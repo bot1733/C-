@@ -1,0 +1,186 @@
+Задание 1
+using System;
+
+class Website
+{
+    // Поля
+    private string name;
+    private string url;
+    private string description;
+    private string ipAddress;
+
+    // Свойства
+    public string Name
+    {
+        get => name;
+        set => name = value;
+    }
+
+    public string Url
+    {
+        get => url;
+        set => url = value;
+    }
+
+    public string Description
+    {
+        get => description;
+        set => description = value;
+    }
+
+    public string IpAddress
+    {
+        get => ipAddress;
+        set => ipAddress = value;
+    }
+
+    // Метод для ввода данных
+    public void InputData()
+    {
+        Console.Write("Введите название сайта: ");
+        Name = Console.ReadLine();
+
+        Console.Write("Введите путь (URL) к сайту: ");
+        Url = Console.ReadLine();
+
+        Console.Write("Введите описание сайта: ");
+        Description = Console.ReadLine();
+
+        Console.Write("Введите IP-адрес сайта: ");
+        IpAddress = Console.ReadLine();
+    }
+
+    // Переопределение ToString()
+    public override string ToString()
+    {
+        return $"Название: {Name}\nURL: {Url}\nОписание: {Description}\nIP-адрес: {IpAddress}";
+    }
+}
+Задание 2
+using System;
+
+class Journal
+{
+    private string title;
+    private int foundationYear;
+    private string description;
+    private string phone;
+    private string email;
+
+    public string Title
+    {
+        get => title;
+        set => title = value;
+    }
+
+    public int FoundationYear
+    {
+        get => foundationYear;
+        set => foundationYear = value;
+    }
+
+    public string Description
+    {
+        get => description;
+        set => description = value;
+    }
+
+    public string Phone
+    {
+        get => phone;
+        set => phone = value;
+    }
+
+    public string Email
+    {
+        get => email;
+        set => email = value;
+    }
+
+    public void InputData()
+    {
+        Console.Write("Введите название журнала: ");
+        Title = Console.ReadLine();
+
+        Console.Write("Введите год основания: ");
+        FoundationYear = int.Parse(Console.ReadLine());
+
+        Console.Write("Введите описание журнала: ");
+        Description = Console.ReadLine();
+
+        Console.Write("Введите контактный телефон: ");
+        Phone = Console.ReadLine();
+
+        Console.Write("Введите контактный e-mail: ");
+        Email = Console.ReadLine();
+    }
+
+    public override string ToString()
+    {
+        return $"Журнал: {Title}\nГод основания: {FoundationYear}\nОписание: {Description}\nТелефон: {Phone}\nE-mail: {Email}";
+    }
+}
+Задание 3
+using System;
+
+class Store
+{
+    private string name;
+    private string address;
+    private string profileDescription;
+    private string phone;
+    private string email;
+
+    public string Name
+    {
+        get => name;
+        set => name = value;
+    }
+
+    public string Address
+    {
+        get => address;
+        set => address = value;
+    }
+
+    public string ProfileDescription
+    {
+        get => profileDescription;
+        set => profileDescription = value;
+    }
+
+    public string Phone
+    {
+        get => phone;
+        set => phone = value;
+    }
+
+    public string Email
+    {
+        get => email;
+        set => email = value;
+    }
+
+    public void InputData()
+    {
+        Console.Write("Введите название магазина: ");
+        Name = Console.ReadLine();
+
+        Console.Write("Введите адрес: ");
+        Address = Console.ReadLine();
+
+        Console.Write("Введите описание профиля магазина: ");
+        ProfileDescription = Console.ReadLine();
+
+        Console.Write("Введите контактный телефон: ");
+        Phone = Console.ReadLine();
+
+        Console.Write("Введите контактный e-mail: ");
+        Email = Console.ReadLine();
+    }
+
+    public override string ToString()
+    {
+        return $"Магазин: {Name}\nАдрес: {Address}\nОписание профиля: {ProfileDescription}\nТелефон: {Phone}\nE-mail: {Email}";
+    }
+}
