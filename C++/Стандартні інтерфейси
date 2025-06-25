@@ -1,0 +1,301 @@
+﻿using System;
+using System.Collections;
+class Book : IComparable<Book>, ICloneable
+{
+    public string Title { get; set; }
+    public string Author { get; set; }
+    public int YearPublished { get; set; }
+    public int PageCount { get; set; }
+
+    public Book()
+    { }
+
+    public Book(string title, string author, int yearPublished, int pageCount)
+    {
+        Title = title;
+        Author = author;
+        YearPublished = yearPublished;
+        PageCount = pageCount;
+    }
+
+    public int CompareTo(Book other)
+    {
+        if (other == null) return 1;
+        return String.Compare(this.Title, other.Title, StringComparison.Ordinal);
+    }
+
+    public object Clone()
+    {
+        Book clone = new Book
+        {
+            Title = this.Title,
+            Author = this.Author,
+            YearPublished = this.YearPublished,
+            PageCount = this.PageCount
+        };
+        return clone;
+    }
+
+    public override string ToString()
+    {
+        return $"Title: {Title}, Author: {Author}, Year: {YearPublished}, Pages: {PageCount}";
+    }
+}
+
+class TitleComparer : IComparer<Book>
+{
+    public int Compare(Book x, Book y)
+    {
+        if (x == null)
+        {
+            return -1;
+        }
+        if (y == null)
+        {
+            return 1;
+        }
+        if (y == null & x == null)
+        {
+            return 0;
+        }
+        return String.Compare(x.Title, y.Title, StringComparison.Ordinal);
+    }
+}
+
+class AuthorComparer : IComparer<Book>
+{
+    public int Compare(Book x, Book y)
+    {
+        if (x == null)
+        {
+            return -1;
+        }
+        if (y == null)
+        {
+            return 1;
+        }
+        if (y == null & x == null)
+        {
+            return 0;
+        }
+        return String.Compare(x.Author, y.Author, StringComparison.Ordinal);
+    }
+}
+
+class YearPublishedComparer : IComparer<Book>
+{
+    public int Compare(Book x, Book y)
+    {
+        if (x == null)
+        {
+            return -1;
+        }
+        if (y == null)
+        {
+            return 1;
+        }
+        if (y == null & x == null)
+        {
+            return 0;
+        }
+        return x.YearPublished.CompareTo(y.YearPublished);
+    }
+}
+
+class PageCountComparer : IComparer<Book>
+{
+    public int Compare(Book x, Book y)
+    {
+        if (x == null)
+        {
+            return -1;
+        }
+        if (y == null)
+        {
+            return 1;
+        }
+        if (y == null & x == null)
+        {
+            return 0;
+        }
+        return x.PageCount.CompareTo(y.PageCount);
+    }
+}
+
+class Library : IEnumerable<Book>
+{
+    private Book[] books;
+
+    public Library(Book[] books)
+    {
+        this.books = books;
+    }
+
+    public IEnumerator<Book> GetEnumerator()
+    {
+        return new LibraryEnumerator(books);
+    }
+
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        return GetEnumerator();
+    }
+
+    private class LibraryEnumerator : IEnumerator<Book>
+    {
+        private readonly Book[] books;
+        private int position = -1;
+
+        public LibraryEnumerator(Book[] books)
+        {
+            this.books = books;
+        }
+
+        public Book Current
+        {
+            get
+            {
+                try
+                {
+                    return books[position];
+                }
+                catch (IndexOutOfRangeException)
+                {
+                    throw new InvalidOperationException();
+                }
+            }
+        }
+
+        object IEnumerator.Current => Current;
+
+        public bool MoveNext()
+        {
+            position++;
+            return position < books.Length;
+        }
+
+        public void Reset()
+        {
+            position = -1;
+        }
+
+        public void Dispose()
+        { }
+    }
+}
+
+class LibraryWithYield : IEnumerable<Book>
+{
+    private Book[] books;
+
+    public LibraryWithYield(Book[] books)
+    {
+        this.books = books;
+    }
+
+    public IEnumerator<Book> GetEnumerator()
+    {
+        for (int i = 0; i < books.Length; i++)
+        {
+            yield return books[i];
+        }
+    }
+
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+        return GetEnumerator();
+    }
+}
+
+class Program
+{
+    static void DisplayBooks(Book[] books)
+    {
+        foreach (var book in books)
+        {
+            Console.WriteLine(book);
+        }
+    }
+
+    static void Main()
+    {
+        // task 1
+
+        //Book[] library = new Book[]
+        //{
+        //    new Book("The Great Gatsby", "F. Scott Fitzgerald", 1925, 180),
+        //    new Book("To Kill a Mockingbird", "Harper Lee", 1960, 281),
+        //    new Book("1984", "George Orwell", 1949, 328),
+        //    new Book("Pride and Prejudice", "Jane Austen", 1813, 432)
+        //};
+
+        //Console.WriteLine("Original array of books:");
+        //DisplayBooks(library);
+
+        //Array.Sort(library);
+        //Console.WriteLine("\nBooks sorted by Title (using IComparable):");
+        //DisplayBooks(library);
+
+        //Array.Sort(library, new TitleComparer());
+        //Console.WriteLine("\nBooks sorted by Title (using TitleComparer):");
+        //DisplayBooks(library);
+
+        //Array.Sort(library, new AuthorComparer());
+        //Console.WriteLine("\nBooks sorted by Author (using AuthorComparer):");
+        //DisplayBooks(library);
+
+        //Array.Sort(library, new YearPublishedComparer());
+        //Console.WriteLine("\nBooks sorted by Year Published (using YearPublishedComparer):");
+        //DisplayBooks(library);
+
+        //Array.Sort(library, new PageCountComparer());
+        //Console.WriteLine("\nBooks sorted by Page Count (using PageCountComparer):");
+        //DisplayBooks(library);
+
+        //Console.WriteLine("\nDemonstrating deep copy with ICloneable:");
+        //Book original = library[0];
+        //Book copy = (Book)original.Clone();
+
+        //Console.WriteLine("Original book: " + original);
+        //Console.WriteLine("Cloned book: " + copy);
+
+        //copy.Title = "Modified Title";
+
+        //Console.WriteLine("\nAfter modifying the copy:");
+        //Console.WriteLine("Original book: " + original);
+        //Console.WriteLine("Cloned book: " + copy);
+
+        // task 2
+
+        Book[] bookArray = new Book[]
+        {
+            new Book("The Great Gatsby", "F. Scott Fitzgerald", 1925, 180),
+            new Book("To Kill a Mockingbird", "Harper Lee", 1960, 281),
+            new Book("1984", "George Orwell", 1949, 328),
+            new Book("Pride and Prejudice", "Jane Austen", 1813, 432)
+        };
+
+        Console.WriteLine("Demonstration of Library class with custom IEnumerator implementation:");
+        Library library = new Library(bookArray);
+        Console.WriteLine("Iterating through library using foreach:");
+        foreach (var book in library)
+        {
+            Console.WriteLine(book);
+        }
+
+        Console.WriteLine("\nDemonstration of LibraryWithYield class using yield:");
+        LibraryWithYield libraryWithYield = new LibraryWithYield(bookArray);
+        Console.WriteLine("Iterating through library using foreach with yield implementation:");
+        foreach (var book in libraryWithYield)
+        {
+            Console.WriteLine(book);
+        }
+
+        Console.WriteLine("\nManual enumeration using IEnumerator:");
+        IEnumerator<Book> enumerator = library.GetEnumerator();
+        while (enumerator.MoveNext())
+        {
+            Console.WriteLine(enumerator.Current);
+        }
+    }
+}
