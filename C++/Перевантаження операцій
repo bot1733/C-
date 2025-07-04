@@ -1,0 +1,160 @@
+using System;
+
+public class Employee
+{
+    public string Name { get; set; }
+    private decimal salary;
+
+    public decimal Salary
+    {
+        get { return salary; }
+        set
+        {
+            if (value < 0)
+                throw new ArgumentException("Зарплата не может быть отрицательной.");
+            salary = value;
+        }
+    }
+
+    public Employee(string name, decimal salary)
+    {
+        Name = name;
+        Salary = salary;
+    }
+
+    
+    public static Employee operator +(Employee emp, decimal amount)
+    {
+        return new Employee(emp.Name, emp.Salary + amount);
+    }
+
+    
+    public static Employee operator -(Employee emp, decimal amount)
+    {
+        return new Employee(emp.Name, emp.Salary - amount);
+    }
+
+    
+    public static bool operator ==(Employee e1, Employee e2)
+    {
+        return e1.Salary == e2.Salary;
+    }
+
+    public static bool operator !=(Employee e1, Employee e2)
+    {
+        return e1.Salary != e2.Salary;
+    }
+
+    public static bool operator <(Employee e1, Employee e2)
+    {
+        return e1.Salary < e2.Salary;
+    }
+
+    
+    public static bool operator >(Employee e1, Employee e2)
+    {
+        return e1.Salary > e2.Salary;
+    }
+
+    public override string ToString()
+    {
+        return $"{Name}, зарплата: {Salary} руб.";
+    }
+
+    public override bool Equals(object obj)
+    {
+        if (obj is Employee other)
+            return this == other;
+        return false;
+    }
+
+    public override int GetHashCode()
+    {
+        return Name.GetHashCode() ^ Salary.GetHashCode();
+    }
+}
+
+
+class Program
+{
+    static void Main()
+    {
+        var emp1 = new Employee("Иван", 50000);
+        var emp2 = new Employee("Мария", 60000);
+
+        emp1 = emp1 + 10000;
+        emp2 = emp2 - 5000;
+
+        Console.WriteLine(emp1); // Иван, зарплата: 60000
+        Console.WriteLine(emp2); // Мария, зарплата: 55000
+
+        Console.WriteLine(emp1 == emp2); // False
+        Console.WriteLine(emp1 > emp2);  // True
+    }
+}
+using System;
+using System.Collections.Generic;
+
+public class ReadingList
+{
+    private List<string> books = new List<string>();
+
+    // Свойство только для чтения
+    public List<string> Books => books;
+
+    public string this[int index]
+    {
+        get => books[index];
+        set => books[index] = value;
+    }
+
+    public static ReadingList operator +(ReadingList list, string book)
+    {
+        var newList = new ReadingList();
+        newList.books.AddRange(list.books);
+        newList.books.Add(book);
+        return newList;
+    }
+
+    public static ReadingList operator -(ReadingList list, string book)
+    {
+        var newList = new ReadingList();
+        newList.books.AddRange(list.books);
+        newList.books.Remove(book);
+        return newList;
+    }
+
+
+    public bool Contains(string book)
+    {
+        return books.Contains(book);
+    }
+
+    
+    public override string ToString()
+    {
+        if (books.Count == 0) return "Список пуст.";
+        string result = "Список книг:\n";
+        for (int i = 0; i < books.Count; i++)
+        {
+            result += $"{i + 1}. {books[i]}\n";
+        }
+        return result;
+    }
+}
+
+
+class Program
+{
+    static void Main()
+    {
+        var list = new ReadingList();
+        list = list + "1984";
+        list = list + "Преступление и наказание";
+        list = list - "1984";
+
+        Console.WriteLine(list.Contains("1984")); 
+        Console.WriteLine(list[0]);               
+        Console.WriteLine(list);
+    }
+}
