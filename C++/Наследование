@@ -1,0 +1,279 @@
+using System;
+
+class Device
+{
+    public string Name { get; set; }
+    public string Characteristics { get; set; }
+
+    public Device(string name, string characteristics)
+    {
+        Name = name;
+        Characteristics = characteristics;
+    }
+
+    public virtual void Sound()
+    {
+        Console.WriteLine("Звук устройства...");
+    }
+
+    public virtual void Show()
+    {
+        Console.WriteLine($"Устройство: {Name}");
+    }
+
+    public virtual void Desc()
+    {
+        Console.WriteLine($"Характеристики: {Characteristics}");
+    }
+}
+
+class Kettle : Device
+{
+    public Kettle(string name, string characteristics) : base(name, characteristics) { }
+
+    public override void Sound()
+    {
+        Console.WriteLine("Чайник: Писк при закипании.");
+    }
+}
+
+class Microwave : Device
+{
+    public Microwave(string name, string characteristics) : base(name, characteristics) { }
+
+    public override void Sound()
+    {
+        Console.WriteLine("Микроволновка: Пи-пи-пи!");
+    }
+}
+
+class Car : Device
+{
+    public Car(string name, string characteristics) : base(name, characteristics) { }
+
+    public override void Sound()
+    {
+        Console.WriteLine("Автомобиль: Врум-врум!");
+    }
+}
+
+class Steamship : Device
+{
+    public Steamship(string name, string characteristics) : base(name, characteristics) { }
+
+    public override void Sound()
+    {
+        Console.WriteLine("Пароход: Ууууу!");
+    }
+}
+
+class Program
+{
+    static void Main()
+    {
+        Device[] devices = new Device[]
+        {
+            new Kettle("Чайник Philips", "1.7 л, 2200 Вт"),
+            new Microwave("Микроволновка LG", "20 л, 800 Вт"),
+            new Car("Автомобиль Audi", "2.0 л, бензин, автомат"),
+            new Steamship("Пароход Вега", "2000 тонн, грузовой")
+        };
+
+        foreach (var device in devices)
+        {
+            device.Show();
+            device.Desc();
+            device.Sound();
+            Console.WriteLine();
+        }
+    }
+}
+using System;
+
+class MusicalInstrument
+{
+    public string Name { get; set; }
+    public string Description { get; set; }
+
+    public MusicalInstrument(string name, string description)
+    {
+        Name = name;
+        Description = description;
+    }
+
+    public virtual void Sound()
+    {
+        Console.WriteLine("Музыкальный инструмент издает звук...");
+    }
+
+    public virtual void Show()
+    {
+        Console.WriteLine($"Инструмент: {Name}");
+    }
+
+    public virtual void Desc()
+    {
+        Console.WriteLine($"Описание: {Description}");
+    }
+
+    public virtual void History()
+    {
+        Console.WriteLine("История инструмента...");
+    }
+}
+
+class Violin : MusicalInstrument
+{
+    public Violin(string name, string description) : base(name, description) { }
+
+    public override void Sound()
+    {
+        Console.WriteLine("Скрипка: Тонкий и протяжный звук.");
+    }
+
+    public override void History()
+    {
+        Console.WriteLine("Скрипка возникла в Италии в начале 16 века.");
+    }
+}
+
+class Trombone : MusicalInstrument
+{
+    public Trombone(string name, string description) : base(name, description) { }
+
+    public override void Sound()
+    {
+        Console.WriteLine("Тромбон: Громкий и глубокий звук.");
+    }
+
+    public override void History()
+    {
+        Console.WriteLine("Тромбон появился в XV веке в Европе.");
+    }
+}
+
+class Ukulele : MusicalInstrument
+{
+    public Ukulele(string name, string description) : base(name, description) { }
+
+    public override void Sound()
+    {
+        Console.WriteLine("Укулеле: Яркий и легкий звук.");
+    }
+
+    public override void History()
+    {
+        Console.WriteLine("Укулеле была создана на Гавайях в конце 19 века.");
+    }
+}
+
+class Cello : MusicalInstrument
+{
+    public Cello(string name, string description) : base(name, description) { }
+
+    public override void Sound()
+    {
+        Console.WriteLine("Виолончель: Глубокий и насыщенный звук.");
+    }
+
+    public override void History()
+    {
+        Console.WriteLine("Виолончель появилась в 16 веке в Италии.");
+    }
+}
+
+class Program
+{
+    static void Main()
+    {
+        MusicalInstrument[] instruments = new MusicalInstrument[]
+        {
+            new Violin("Скрипка Stradivarius", "Классическая скрипка для оркестра"),
+            new Trombone("Тромбон Yamaha", "Медный духовой инструмент"),
+            new Ukulele("Укулеле Mahalo", "Четырёхструнный гавайский инструмент"),
+            new Cello("Виолончель Cremona", "Струнный смычковый инструмент")
+        };
+
+        foreach (var instrument in instruments)
+        {
+            instrument.Show();
+            instrument.Desc();
+            instrument.Sound();
+            instrument.History();
+            Console.WriteLine();
+        }
+    }
+}
+using System;
+
+abstract class Worker
+{
+    public string Name { get; set; }
+
+    public Worker(string name)
+    {
+        Name = name;
+    }
+
+    // Абстрактный метод — должен быть реализован в каждом подклассе
+    public abstract void Print();
+}
+
+class President : Worker
+{
+    public President(string name) : base(name) { }
+
+    public override void Print()
+    {
+        Console.WriteLine($"Президент: {Name} — Руководит всей организацией.");
+    }
+}
+
+class Security : Worker
+{
+    public Security(string name) : base(name) { }
+
+    public override void Print()
+    {
+        Console.WriteLine($"Охранник: {Name} — Обеспечивает безопасность предприятия.");
+    }
+}
+
+class Manager : Worker
+{
+    public Manager(string name) : base(name) { }
+
+    public override void Print()
+    {
+        Console.WriteLine($"Менеджер: {Name} — Управляет отделами и проектами.");
+    }
+}
+
+class Engineer : Worker
+{
+    public Engineer(string name) : base(name) { }
+
+    public override void Print()
+    {
+        Console.WriteLine($"Инженер: {Name} — Занимается разработкой и техническими задачами.");
+    }
+}
+
+class Program
+{
+    static void Main()
+    {
+        Worker[] workers = new Worker[]
+        {
+            new President("Иванов И.И."),
+            new Security("Петров П.П."),
+            new Manager("Сидоров С.С."),
+            new Engineer("Кузнецов К.К.")
+        };
+
+        foreach (var worker in workers)
+        {
+            worker.Print();
+        }
+    }
+}
