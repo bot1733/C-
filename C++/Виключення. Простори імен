@@ -1,0 +1,90 @@
+using System;
+
+class Program
+{
+    static void Main()
+    {
+        while (true)
+        {
+            Console.WriteLine("Выберите направление перевода:");
+            Console.WriteLine("1. Из десятичной в двоичную");
+            Console.WriteLine("2. Из двоичной в десятичную");
+            Console.WriteLine("3. Из десятичной в шестнадцатеричную");
+            Console.WriteLine("4. Из шестнадцатеричной в десятичную");
+            Console.WriteLine("0. Выход");
+
+            Console.Write("Ваш выбор: ");
+            string choice = Console.ReadLine();
+
+            if (choice == "0") break;
+
+            Console.Write("Введите число: ");
+            string input = Console.ReadLine();
+
+            try
+            {
+                switch (choice)
+                {
+                    case "1":
+                        int dec1 = int.Parse(input);
+                        Console.WriteLine("Результат: " + Convert.ToString(dec1, 2));
+                        break;
+                    case "2":
+                        int binToDec = Convert.ToInt32(input, 2);
+                        Console.WriteLine("Результат: " + binToDec);
+                        break;
+                    case "3":
+                        int dec2 = int.Parse(input);
+                        Console.WriteLine("Результат: " + Convert.ToString(dec2, 16).ToUpper());
+                        break;
+                    case "4":
+                        int hexToDec = Convert.ToInt32(input, 16);
+                        Console.WriteLine("Результат: " + hexToDec);
+                        break;
+                    default:
+                        Console.WriteLine("Неверный выбор.");
+                        break;
+                }
+            }
+            catch (FormatException)
+            {
+                Console.WriteLine("Ошибка: введено недопустимое число.");
+            }
+            catch (OverflowException)
+            {
+                Console.WriteLine("Ошибка: число выходит за пределы типа int.");
+            }
+
+            Console.WriteLine();
+        }
+    }
+}
+using System;
+
+class ForeignPassport
+{
+    public string FullName { get; set; }
+    public string PassportNumber { get; set; }
+    public DateTime IssueDate { get; set; }
+
+    public ForeignPassport(string fullName, string passportNumber, DateTime issueDate)
+    {
+        if (string.IsNullOrWhiteSpace(fullName))
+            throw new ArgumentException("ФИО не может быть пустым.");
+
+        if (passportNumber.Length != 9 || !ulong.TryParse(passportNumber, out _))
+            throw new ArgumentException("Номер паспорта должен состоять из 9 цифр.");
+
+        if (issueDate > DateTime.Now)
+            throw new ArgumentException("Дата выдачи не может быть в будущем.");
+
+        FullName = fullName;
+        PassportNumber = passportNumber;
+        IssueDate = issueDate;
+    }
+
+    public override string ToString()
+    {
+        return $"ФИО: {FullName}, Паспорт: {PassportNumber}, Дата выдачи: {IssueDate.ToShortDateString()}";
+    }
+}
