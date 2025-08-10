@@ -1,0 +1,104 @@
+using System;
+using System.Collections.Generic;
+
+class Program
+{
+    static void Main()
+    {
+       
+        Func<string, string, bool> containsWord = (text, word) => text.Contains(word, StringComparison.OrdinalIgnoreCase);
+
+        // Тест лямбды
+        string sampleText = "Сегодня отличная погода для прогулки.";
+        string searchWord = "погода";
+
+        Console.WriteLine("Задание 1:");
+        Console.WriteLine($"Текст: \"{sampleText}\"");
+        Console.WriteLine($"Ищем слово: \"{searchWord}\"");
+        Console.WriteLine($"Результат: {containsWord(sampleText, searchWord)}\n");
+
+        Backpack myBackpack = new Backpack();
+        myBackpack.SetProperties("Чёрный", "Nike", "Нейлон", 0.5, 20);
+
+       
+        myBackpack.OnItemAdded += delegate (string message)
+        {
+            Console.WriteLine("Событие: " + message);
+        };
+
+        Console.WriteLine("Задание 2:");
+
+        try
+        {
+            myBackpack.AddItem(new BackpackItem("Бутылка воды", 2));
+            myBackpack.AddItem(new BackpackItem("Ноутбук", 5));
+            myBackpack.AddItem(new BackpackItem("Учебник", 4));
+            myBackpack.AddItem(new BackpackItem("Одежда", 9));
+            myBackpack.AddItem(new BackpackItem("Кирпич", 3)); // Превышение объёма
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Ошибка: " + ex.Message);
+        }
+
+        myBackpack.ShowContents();
+public class BackpackItem
+{
+    public string Name { get; set; }
+    public double Volume { get; set; }
+
+    public BackpackItem(string name, double volume)
+    {
+        Name = name;
+        Volume = volume;
+    }
+}
+
+public class Backpack
+{
+    public string Color { get; private set; }
+    public string Brand { get; private set; }
+    public string Material { get; private set; }
+    public double Weight { get; private set; }
+    public double Capacity { get; private set; }
+    private double currentVolume = 0;
+
+    private List<BackpackItem> contents = new List<BackpackItem>();
+
+    public delegate void BackpackEventHandler(string message);
+    public event BackpackEventHandler OnItemAdded;
+
+    public void SetProperties(string color, string brand, string material, double weight, double capacity)
+    {
+        Color = color;
+        Brand = brand;
+        Material = material;
+        Weight = weight;
+        Capacity = capacity;
+    }
+
+    public void AddItem(BackpackItem item)
+    {
+        if (currentVolume + item.Volume > Capacity)
+        {
+            throw new InvalidOperationException("Невозможно добавить предмет: превышен объём рюкзака.");
+        }
+
+        contents.Add(item);
+        currentVolume += item.Volume;
+
+        OnItemAdded?.Invoke($"Добавлен предмет \"{item.Name}\" (объём: {item.Volume} л). Текущий объём: {currentVolume} / {Capacity} л.");
+    }
+
+    public void ShowContents()
+    {
+        Console.WriteLine("\nСодержимое рюкзака:");
+        foreach (var item in contents)
+        {
+            Console.WriteLine($"- {item.Name} ({item.Volume} л)");
+        }
+        Console.WriteLine($"Общий объём: {currentVolume} / {Capacity} л\n");
+    }
+}
+
+      
