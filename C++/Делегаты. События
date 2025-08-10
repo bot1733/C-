@@ -1,0 +1,132 @@
+using System;
+
+public class CreditCard
+{
+    public string CardNumber { get; private set; }
+    public string CardHolder { get; private set; }
+    public DateTime ExpiryDate { get; private set; }
+    private int pin;
+    public decimal CreditLimit { get; private set; }
+    public decimal Balance { get; private set; }
+
+    private bool isCreditInUse = false;
+
+    public delegate void CardEventHandler(string message);
+
+    public event CardEventHandler OnDeposit;
+    public event CardEventHandler OnWithdraw;
+    public event CardEventHandler OnCreditStarted;
+    public event CardEventHandler OnTargetBalanceReached;
+    public event CardEventHandler OnPinChanged;
+
+    private decimal targetAmount;
+
+    public CreditCard(string cardNumber, string cardHolder, DateTime expiryDate, int pin, decimal creditLimit)
+    {
+        CardNumber = cardNumber;
+        CardHolder = cardHolder;
+        ExpiryDate = expiryDate;
+        this.pin = pin;
+        CreditLimit = creditLimit;
+        Balance = 0;
+    }
+
+    public void SetTargetAmount(decimal amount)
+    {
+        targetAmount = amount;
+    }
+
+    public void Deposit(decimal amount)
+    {
+        Balance += amount;
+        OnDeposit?.Invoke($"Счёт пополнен на {amount} руб. Текущий баланс: {Balance} руб.");
+
+        if (Balance >= targetAmount && targetAmount > 0)
+        {
+            OnTargetBalanceReached?.Invoke($"Достигнута целевая сумма {targetAmount} руб.");
+        }
+    }
+
+    public void Withdraw(decimal amount)
+    {
+        if (amount <= Balance)
+        {
+            Balance -= amount;
+            OnWithdraw?.Invoke($"Списано {amount} руб. Остаток: {Balance} руб.");
+        }
+        else if (amount <= Balance + CreditLimit)
+        {
+            decimal creditUsed = amount - Balance;
+            Balance = 0;
+            isCreditInUse = true;
+            OnWithdraw?.Invoke($"Списано {amount} руб. Использованы кредитные средства: {creditUsed} руб.");
+            OnCreditStarted?.Invoke($"Начато использование кредитных средств. Кредит: {creditUsed} руб.");
+        }
+        else
+        {
+            Console.WriteLine("Недостаточно средств, включая кредитный лимит.");
+        }
+    }
+
+    public void ChangePin(int oldPin, int newPin)
+    {
+        if (pin == oldPin)
+        {
+            pin = newPin;
+            OnPinChanged?.Invoke("PIN успешно изменён.");
+        }
+        else
+        {
+            Console.WriteLine("Неверный текущий PIN.");
+        }
+    }
+
+    public void ShowInfo()
+    {
+        Console.WriteLine("==== ИНФОРМАЦИЯ О КАРТЕ ====");
+        Console.WriteLine($"Карта: {CardNumber}");
+        Console.WriteLine($"Владелец: {CardHolder}");
+        Console.WriteLine($"Срок действия: {ExpiryDate.ToShortDateString()}");
+        Console.WriteLine($"Баланс: {Balance} руб.");
+        Console.WriteLine($"Кредитный лимит: {CreditLimit} руб.");
+        Console.WriteLine("============================\n");
+    }
+}
+
+class Program
+{
+    static void Main()
+    {
+        CreditCard card = new CreditCard(
+            "1234 5678 9012 3456",
+            "Иванов Иван Иванович",
+            new DateTime(2026, 12, 31),
+            1234,
+            10000
+        );
+
+        // Подписка на события
+        card.OnDeposit += Console.WriteLine;
+        card.OnWithdraw += Console.WriteLine;
+        card.OnCreditStarted += Console.WriteLine;
+        card.OnTargetBalanceReached += Console.WriteLine;
+        card.OnPinChanged += Console.WriteLine;
+
+        card.ShowInfo();
+
+        card.SetTargetAmount(5000);
+
+        card.Deposit(3000);
+        card.Deposit(2500); // здесь должно сработать событие достижения цели
+
+        card.Withdraw(1000);
+        card.Withdraw(6000); // использование кредитных средств
+
+        card.ChangePin(1234, 4321); // успешная смена PIN
+        card.ChangePin(1111, 2222); // неправильный PIN
+
+        card.ShowInfo();
+
+        Console.ReadLine();
+    }
+}
