@@ -1,0 +1,483 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace EmployeeManagement
+{
+    class Program
+    {
+        public class Employee
+        {
+            public string FullName { get; set; }
+            public string Position { get; set; }
+            public decimal Salary { get; set; }
+            public string Email { get; set; }
+
+            public override string ToString()
+            {
+                return $"ФИО: {FullName}, Должность: {Position}, Зарплата: {Salary:C}, Email: {Email}";
+            }
+        }
+
+        static List<Employee> employees = new List<Employee>();
+
+        static void Main(string[] args)
+        {
+            bool running = true;
+
+            while (running)
+            {
+                Console.WriteLine("\n=== Меню ===");
+                Console.WriteLine("1. Добавить сотрудника");
+                Console.WriteLine("2. Удалить сотрудника");
+                Console.WriteLine("3. Изменить информацию");
+                Console.WriteLine("4. Поиск сотрудника");
+                Console.WriteLine("5. Сортировка сотрудников");
+                Console.WriteLine("6. Показать всех сотрудников");
+                Console.WriteLine("0. Выход");
+                Console.Write("Выберите опцию: ");
+
+                switch (Console.ReadLine())
+                {
+                    case "1":
+                        AddEmployee();
+                        break;
+                    case "2":
+                        RemoveEmployee();
+                        break;
+                    case "3":
+                        EditEmployee();
+                        break;
+                    case "4":
+                        SearchEmployees();
+                        break;
+                    case "5":
+                        SortEmployees();
+                        break;
+                    case "6":
+                        DisplayEmployees();
+                        break;
+                    case "0":
+                        running = false;
+                        break;
+                    default:
+                        Console.WriteLine("Неверная опция.");
+                        break;
+                }
+            }
+        }
+
+        static void AddEmployee()
+        {
+            Console.WriteLine("\n=== Добавление сотрудника ===");
+
+            Employee emp = new Employee();
+            Console.Write("ФИО: ");
+            emp.FullName = Console.ReadLine();
+            Console.Write("Должность: ");
+            emp.Position = Console.ReadLine();
+            Console.Write("Зарплата: ");
+            emp.Salary = decimal.Parse(Console.ReadLine());
+            Console.Write("Email: ");
+            emp.Email = Console.ReadLine();
+
+            employees.Add(emp);
+            Console.WriteLine("Сотрудник добавлен.");
+        }
+
+        static void RemoveEmployee()
+        {
+            Console.Write("\nВведите ФИО сотрудника для удаления: ");
+            string name = Console.ReadLine();
+
+            var employee = employees.FirstOrDefault(e => e.FullName.Equals(name, StringComparison.OrdinalIgnoreCase));
+            if (employee != null)
+            {
+                employees.Remove(employee);
+                Console.WriteLine("Сотрудник удалён.");
+            }
+            else
+            {
+                Console.WriteLine("Сотрудник не найден.");
+            }
+        }
+
+        static void EditEmployee()
+        {
+            Console.Write("\nВведите ФИО сотрудника для редактирования: ");
+            string name = Console.ReadLine();
+
+            var employee = employees.FirstOrDefault(e => e.FullName.Equals(name, StringComparison.OrdinalIgnoreCase));
+            if (employee != null)
+            {
+                Console.Write("Новое ФИО (оставьте пустым, если не нужно менять): ");
+                string newName = Console.ReadLine();
+                if (!string.IsNullOrWhiteSpace(newName))
+                    employee.FullName = newName;
+
+                Console.Write("Новая должность: ");
+                string newPosition = Console.ReadLine();
+                if (!string.IsNullOrWhiteSpace(newPosition))
+                    employee.Position = newPosition;
+
+                Console.Write("Новая зарплата: ");
+                string salaryInput = Console.ReadLine();
+                if (decimal.TryParse(salaryInput, out decimal newSalary))
+                    employee.Salary = newSalary;
+
+                Console.Write("Новый Email: ");
+                string newEmail = Console.ReadLine();
+                if (!string.IsNullOrWhiteSpace(newEmail))
+                    employee.Email = newEmail;
+
+                Console.WriteLine("Информация обновлена.");
+            }
+            else
+            {
+                Console.WriteLine("Сотрудник не найден.");
+            }
+        }
+
+        static void SearchEmployees()
+        {
+            Console.WriteLine("\nПоиск по:");
+            Console.WriteLine("1. ФИО");
+            Console.WriteLine("2. Должности");
+            Console.WriteLine("3. Email");
+
+            string choice = Console.ReadLine();
+            Console.Write("Введите значение для поиска: ");
+            string search = Console.ReadLine();
+
+            IEnumerable<Employee> results = choice switch
+            {
+                "1" => employees.Where(e => e.FullName.Contains(search, StringComparison.OrdinalIgnoreCase)),
+                "2" => employees.Where(e => e.Position.Contains(search, StringComparison.OrdinalIgnoreCase)),
+                "3" => employees.Where(e => e.Email.Contains(search, StringComparison.OrdinalIgnoreCase)),
+                _ => Enumerable.Empty<Employee>()
+            };
+
+            if (results.Any())
+            {
+                Console.WriteLine("\nНайденные сотрудники:");
+                foreach (var e in results)
+                    Console.WriteLine(e);
+            }
+            else
+            {
+                Console.WriteLine("Сотрудники не найдены.");
+            }
+        }
+
+        static void SortEmployees()
+        {
+            Console.WriteLine("\nСортировка по:");
+            Console.WriteLine("1. ФИО");
+            Console.WriteLine("2. Должности");
+            Console.WriteLine("3. Зарплате");
+
+            string choice = Console.ReadLine();
+
+            List<Employee> sorted = choice switch
+            {
+                "1" => employees.OrderBy(e => e.FullName).ToList(),
+                "2" => employees.OrderBy(e => e.Position).ToList(),
+                "3" => employees.OrderByDescending(e => e.Salary).ToList(),
+                _ => null
+            };
+
+            if (sorted != null)
+            {
+                Console.WriteLine("\nОтсортированные сотрудники:");
+                foreach (var e in sorted)
+                    Console.WriteLine(e);
+            }
+            else
+            {
+                Console.WriteLine("Неверный выбор.");
+            }
+        }
+
+        static void DisplayEmployees()
+        {
+            Console.WriteLine("\n=== Все сотрудники ===");
+            if (employees.Count == 0)
+                Console.WriteLine("Список пуст.");
+            else
+                foreach (var e in employees)
+                    Console.WriteLine(e);
+        }
+    }
+}
+
+using System;
+using System.Collections.Generic;
+
+namespace BookManagement
+{
+    public class Book
+    {
+        public string Title { get; set; }
+        public string AuthorFullName { get; set; }
+        public string Genre { get; set; }
+        public int Year { get; set; }
+
+        public override string ToString()
+        {
+            return $"Название: {Title}, Автор: {AuthorFullName}, Жанр: {Genre}, Год: {Year}";
+        }
+    }
+
+    class Program
+    {
+        static LinkedList<Book> books = new LinkedList<Book>();
+
+        static void Main(string[] args)
+        {
+            bool running = true;
+            while (running)
+            {
+                Console.WriteLine("\n=== Меню ===");
+                Console.WriteLine("1. Добавить книгу");
+                Console.WriteLine("2. Удалить книгу");
+                Console.WriteLine("3. Изменить информацию о книге");
+                Console.WriteLine("4. Поиск книги");
+                Console.WriteLine("5. Вставить книгу в начало");
+                Console.WriteLine("6. Вставить книгу в конец");
+                Console.WriteLine("7. Вставить книгу по индексу");
+                Console.WriteLine("8. Удалить книгу из начала");
+                Console.WriteLine("9. Удалить книгу из конца");
+                Console.WriteLine("10. Удалить книгу по индексу");
+                Console.WriteLine("11. Показать все книги");
+                Console.WriteLine("0. Выход");
+
+                Console.Write("Выберите опцию: ");
+                switch (Console.ReadLine())
+                {
+                    case "1": AddBook(); break;
+                    case "2": RemoveBook(); break;
+                    case "3": EditBook(); break;
+                    case "4": SearchBooks(); break;
+                    case "5": InsertAtStart(); break;
+                    case "6": InsertAtEnd(); break;
+                    case "7": InsertAtPosition(); break;
+                    case "8": RemoveFromStart(); break;
+                    case "9": RemoveFromEnd(); break;
+                    case "10": RemoveAtPosition(); break;
+                    case "11": DisplayBooks(); break;
+                    case "0": running = false; break;
+                    default: Console.WriteLine("Неверный выбор."); break;
+                }
+            }
+        }
+
+        static Book CreateBook()
+        {
+            Console.Write("Название книги: ");
+            string title = Console.ReadLine();
+            Console.Write("ФИО автора: ");
+            string author = Console.ReadLine();
+            Console.Write("Жанр: ");
+            string genre = Console.ReadLine();
+            Console.Write("Год выпуска: ");
+            int year = int.Parse(Console.ReadLine());
+
+            return new Book { Title = title, AuthorFullName = author, Genre = genre, Year = year };
+        }
+
+        static void AddBook()
+        {
+            Book book = CreateBook();
+            books.AddLast(book);
+            Console.WriteLine("Книга добавлена в конец списка.");
+        }
+
+        static void InsertAtStart()
+        {
+            Book book = CreateBook();
+            books.AddFirst(book);
+            Console.WriteLine("Книга добавлена в начало списка.");
+        }
+
+        static void InsertAtEnd()
+        {
+            Book book = CreateBook();
+            books.AddLast(book);
+            Console.WriteLine("Книга добавлена в конец списка.");
+        }
+
+        static void InsertAtPosition()
+        {
+            Console.Write("Введите индекс позиции для вставки: ");
+            int index = int.Parse(Console.ReadLine());
+
+            if (index < 0 || index > books.Count)
+            {
+                Console.WriteLine("Неверный индекс.");
+                return;
+            }
+
+            Book book = CreateBook();
+            var node = GetNodeAt(index);
+            if (node != null)
+                books.AddBefore(node, book);
+            else
+                books.AddLast(book);
+
+            Console.WriteLine("Книга вставлена.");
+        }
+
+        static void RemoveBook()
+        {
+            Console.Write("Введите название книги для удаления: ");
+            string title = Console.ReadLine();
+
+            var node = FindBookNode(title);
+            if (node != null)
+            {
+                books.Remove(node);
+                Console.WriteLine("Книга удалена.");
+            }
+            else
+            {
+                Console.WriteLine("Книга не найдена.");
+            }
+        }
+
+        static void RemoveFromStart()
+        {
+            if (books.Count > 0)
+            {
+                books.RemoveFirst();
+                Console.WriteLine("Книга удалена из начала.");
+            }
+            else
+            {
+                Console.WriteLine("Список пуст.");
+            }
+        }
+
+        static void RemoveFromEnd()
+        {
+            if (books.Count > 0)
+            {
+                books.RemoveLast();
+                Console.WriteLine("Книга удалена из конца.");
+            }
+            else
+            {
+                Console.WriteLine("Список пуст.");
+            }
+        }
+
+        static void RemoveAtPosition()
+        {
+            Console.Write("Введите индекс для удаления: ");
+            int index = int.Parse(Console.ReadLine());
+
+            var node = GetNodeAt(index);
+            if (node != null)
+            {
+                books.Remove(node);
+                Console.WriteLine("Книга удалена.");
+            }
+            else
+            {
+                Console.WriteLine("Неверный индекс.");
+            }
+        }
+
+        static void EditBook()
+        {
+            Console.Write("Введите название книги для редактирования: ");
+            string title = Console.ReadLine();
+
+            var node = FindBookNode(title);
+            if (node != null)
+            {
+                Console.WriteLine("Введите новые данные:");
+                Book updatedBook = CreateBook();
+                node.Value = updatedBook;
+                Console.WriteLine("Информация обновлена.");
+            }
+            else
+            {
+                Console.WriteLine("Книга не найдена.");
+            }
+        }
+
+        static void SearchBooks()
+        {
+            Console.WriteLine("Поиск по:\n1. Названию\n2. Автору\n3. Жанру\n4. Году");
+            Console.Write("Выберите опцию: ");
+            string option = Console.ReadLine();
+
+            Console.Write("Введите значение для поиска: ");
+            string value = Console.ReadLine();
+
+            bool found = false;
+
+            foreach (var book in books)
+            {
+                bool match = option switch
+                {
+                    "1" => book.Title.Contains(value, StringComparison.OrdinalIgnoreCase),
+                    "2" => book.AuthorFullName.Contains(value, StringComparison.OrdinalIgnoreCase),
+                    "3" => book.Genre.Contains(value, StringComparison.OrdinalIgnoreCase),
+                    "4" => book.Year.ToString() == value,
+                    _ => false
+                };
+
+                if (match)
+                {
+                    Console.WriteLine(book);
+                    found = true;
+                }
+            }
+
+            if (!found)
+                Console.WriteLine("Книги не найдены.");
+        }
+
+        static void DisplayBooks()
+        {
+            Console.WriteLine("\n=== Список книг ===");
+            if (books.Count == 0)
+            {
+                Console.WriteLine("Список пуст.");
+                return;
+            }
+
+            int i = 0;
+            foreach (var book in books)
+            {
+                Console.WriteLine($"{i++}. {book}");
+            }
+        }
+
+        static LinkedListNode<Book> GetNodeAt(int index)
+        {
+            if (index < 0 || index >= books.Count)
+                return null;
+
+            var current = books.First;
+            for (int i = 0; i < index; i++)
+                current = current.Next;
+
+            return current;
+        }
+
+        static LinkedListNode<Book> FindBookNode(string title)
+        {
+            var current = books.First;
+            while (current != null)
+            {
+                if (current.Value.Title.Equals(title, StringComparison.OrdinalIgnoreCase))
+                    return current;
+                current = current.Next;
+            }
+            return null;
+        }
+    }
+}
+
