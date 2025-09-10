@@ -1,0 +1,187 @@
+using System;
+using System.Runtime.InteropServices;
+
+class Program
+{
+    [DllImport("user32.dll", CharSet = CharSet.Auto)]
+    private static extern int MessageBox(IntPtr hWnd, String text, String caption, int options);
+
+    static void Main()
+    {
+        MessageBox(IntPtr.Zero, "Мене звати Микита", "Інформація", 0);
+        MessageBox(IntPtr.Zero, "Я живу в Україні", "Інформація", 0);
+        MessageBox(IntPtr.Zero, "Я вивчаю C# та бази даних", "Інформація", 0);
+    }
+}
+
+using System;
+using System.Runtime.InteropServices;
+using System.Windows.Forms;
+
+namespace WinApiDemo
+{
+    public partial class MainForm : Form
+    {
+        [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
+        private static extern IntPtr FindWindow(string lpClassName, string lpWindowName);
+
+        [DllImport("user32.dll", CharSet = CharSet.Auto)]
+        private static extern IntPtr SendMessage(IntPtr hWnd, uint Msg, IntPtr wParam, string lParam);
+
+        [DllImport("user32.dll", CharSet = CharSet.Auto)]
+        private static extern IntPtr SendMessage(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
+
+        private const uint WM_SETTEXT = 0x000C;
+        private const uint WM_CLOSE = 0x0010;
+
+        TextBox txtNewTitle;
+        Button btnChangeTitle;
+        Button btnCloseWindow;
+        Button btnMyVariant;
+
+        public MainForm()
+        {
+            txtNewTitle = new TextBox { Left = 20, Top = 20, Width = 200 };
+            btnChangeTitle = new Button { Text = "Змінити заголовок", Left = 20, Top = 60, Width = 200 };
+            btnCloseWindow = new Button { Text = "Закрити вікно", Left = 20, Top = 100, Width = 200 };
+            btnMyVariant = new Button { Text = "Мій варіант", Left = 20, Top = 140, Width = 200 };
+
+            btnChangeTitle.Click += btnChangeTitle_Click;
+            btnCloseWindow.Click += btnCloseWindow_Click;
+            btnMyVariant.Click += btnMyVariant_Click;
+
+            Controls.Add(txtNewTitle);
+            Controls.Add(btnChangeTitle);
+            Controls.Add(btnCloseWindow);
+            Controls.Add(btnMyVariant);
+
+            Text = "Моє вікно";
+            Width = 260;
+            Height = 240;
+        }
+
+        private void btnChangeTitle_Click(object sender, EventArgs e)
+        {
+            IntPtr hWnd = FindWindow(null, "Моє вікно");
+            if (hWnd != IntPtr.Zero)
+                SendMessage(hWnd, WM_SETTEXT, IntPtr.Zero, txtNewTitle.Text);
+        }
+
+        private void btnCloseWindow_Click(object sender, EventArgs e)
+        {
+            IntPtr hWnd = FindWindow(null, Text);
+            if (hWnd != IntPtr.Zero)
+                SendMessage(hWnd, WM_CLOSE, IntPtr.Zero, IntPtr.Zero);
+        }
+
+        private void btnMyVariant_Click(object sender, EventArgs e)
+        {
+            IntPtr hWnd = FindWindow(null, "Моє вікно");
+            if (hWnd != IntPtr.Zero)
+                MessageBox.Show("Вікно знайдено!");
+        }
+
+        [STAThread]
+        static void Main()
+        {
+            Application.EnableVisualStyles();
+            Application.Run(new MainForm());
+        }
+
+    }
+}
+
+using System;
+using System.Runtime.InteropServices;
+using System.Threading;
+
+class Program
+{
+    [DllImport("kernel32.dll")]
+    private static extern bool Beep(int freq, int duration);
+
+    [DllImport("user32.dll")]
+    private static extern bool MessageBeep(uint uType);
+
+    static void Main()
+    {
+        Beep(500, 500);
+        Thread.Sleep(500);
+        Beep(700, 500);
+        Thread.Sleep(500);
+        Beep(900, 500);
+        Thread.Sleep(1000);
+
+        MessageBeep(0xFFFFFFFF);
+        Thread.Sleep(700);
+        MessageBeep(0xFFFFFFFF);
+        Thread.Sleep(700);
+        MessageBeep(0xFFFFFFFF);
+    }
+}
+
+
+using System;
+using System.Runtime.InteropServices;
+using System.Threading;
+using System.Windows.Forms;
+
+namespace WinApiStyleChanger
+{
+    public class MainForm : Form
+    {
+        TextBox txtBox;
+        Button btnSample;
+
+        [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
+        private static extern IntPtr FindWindow(string lpClassName, string lpWindowName);
+
+        [DllImport("user32.dll", SetLastError = true, CharSet = CharSet.Auto)]
+        private static extern IntPtr FindWindowEx(IntPtr parentHandle, IntPtr childAfter, string lpszClass, string lpszWindow);
+
+        [DllImport("user32.dll")]
+        private static extern bool SetWindowText(IntPtr hWnd, string lpString);
+
+        [DllImport("user32.dll")]
+        private static extern bool EnableWindow(IntPtr hWnd, bool bEnable);
+
+        public MainForm()
+        {
+            txtBox = new TextBox { Left = 20, Top = 20, Width = 200, Text = "Текст" };
+            btnSample = new Button { Left = 20, Top = 60, Width = 200, Text = "Кнопка" };
+
+            Controls.Add(txtBox);
+            Controls.Add(btnSample);
+
+            Text = "Вікно з елементами";
+            Width = 260;
+            Height = 150;
+
+            Shown += (s, e) => new Thread(ChangeStyles).Start();
+        }
+
+        private void ChangeStyles()
+        {
+            Thread.Sleep(2000);
+            IntPtr hWndMain = FindWindow(null, "Вікно з елементами");
+            if (hWndMain != IntPtr.Zero)
+            {
+                IntPtr hWndTextBox = FindWindowEx(hWndMain, IntPtr.Zero, "Edit", null);
+                if (hWndTextBox != IntPtr.Zero) SetWindowText(hWndTextBox, "Новий текст");
+                IntPtr hWndButton = FindWindowEx(hWndMain, IntPtr.Zero, "Button", null);
+                if (hWndButton != IntPtr.Zero)
+                {
+                    SetWindowText(hWndButton, "Нова кнопка");
+                    EnableWindow(hWndButton, false);
+                }
+            }
+        }
+
+        [STAThread]
+        static void Main()
+        {
+            Application.EnableVisualStyles();
+            Application.Run(new MainForm());
+        }
+    }
+}
