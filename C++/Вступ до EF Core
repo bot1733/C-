@@ -1,0 +1,156 @@
+using System;
+using System.Collections.Generic;
+using Microsoft.EntityFrameworkCore;
+using System.Linq;
+
+namespace AcademyApp
+{
+    public class Student
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public int Age { get; set; }
+    }
+
+    public class Teacher
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public string Subject { get; set; }
+    }
+
+    public class AcademyContext : DbContext
+    {
+        public DbSet<Student> Students { get; set; }
+        public DbSet<Teacher> Teachers { get; set; }
+
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            optionsBuilder.UseSqlite("Data Source=academy.db");
+        }
+    }
+
+    class Program
+    {
+        static void Main()
+        {
+            using (var db = new AcademyContext())
+            {
+                db.Database.EnsureCreated();
+            }
+
+            bool exit = false;
+            while (!exit)
+            {
+                Console.Clear();
+                Console.WriteLine("=== Академія ===");
+                Console.WriteLine("1. Додати викладача");
+                Console.WriteLine("2. Додати студента");
+                Console.WriteLine("3. Переглянути викладачів");
+                Console.WriteLine("4. Переглянути студентів");
+                Console.WriteLine("5. Вихід");
+                Console.Write("Вибір: ");
+                string choice = Console.ReadLine();
+
+                switch (choice)
+                {
+                    case "1":
+                        AddTeacher();
+                        break;
+                    case "2":
+                        AddStudent();
+                        break;
+                    case "3":
+                        ViewTeachers();
+                        break;
+                    case "4":
+                        ViewStudents();
+                        break;
+                    case "5":
+                        exit = true;
+                        break;
+                    default:
+                        Console.WriteLine("Невірний вибір. Натисніть Enter для продовження.");
+                        Console.ReadLine();
+                        break;
+                }
+            }
+        }
+
+        static void AddTeacher()
+        {
+            Console.Clear();
+            Console.WriteLine("=== Додати викладача ===");
+            Console.Write("Ім'я: ");
+            string name = Console.ReadLine();
+            Console.Write("Предмет: ");
+            string subject = Console.ReadLine();
+
+            using (var db = new AcademyContext())
+            {
+                var teacher = new Teacher { Name = name, Subject = subject };
+                db.Teachers.Add(teacher);
+                db.SaveChanges();
+            }
+
+            Console.WriteLine("Викладача додано. Натисніть Enter для повернення.");
+            Console.ReadLine();
+        }
+
+        static void AddStudent()
+        {
+            Console.Clear();
+            Console.WriteLine("=== Додати студента ===");
+            Console.Write("Ім'я: ");
+            string name = Console.ReadLine();
+            Console.Write("Вік: ");
+            int age = int.Parse(Console.ReadLine());
+
+            using (var db = new AcademyContext())
+            {
+                var student = new Student { Name = name, Age = age };
+                db.Students.Add(student);
+                db.SaveChanges();
+            }
+
+            Console.WriteLine("Студента додано. Натисніть Enter для повернення.");
+            Console.ReadLine();
+        }
+
+        static void ViewTeachers()
+        {
+            Console.Clear();
+            Console.WriteLine("=== Викладачі ===");
+
+            using (var db = new AcademyContext())
+            {
+                var teachers = db.Teachers.ToList();
+                foreach (var t in teachers)
+                {
+                    Console.WriteLine($"ID: {t.Id}, Ім'я: {t.Name}, Предмет: {t.Subject}");
+                }
+            }
+
+            Console.WriteLine("Натисніть Enter для повернення.");
+            Console.ReadLine();
+        }
+
+        static void ViewStudents()
+        {
+            Console.Clear();
+            Console.WriteLine("=== Студенти ===");
+
+            using (var db = new AcademyContext())
+            {
+                var students = db.Students.ToList();
+                foreach (var s in students)
+                {
+                    Console.WriteLine($"ID: {s.Id}, Ім'я: {s.Name}, Вік: {s.Age}");
+                }
+            }
+
+            Console.WriteLine("Натисніть Enter для повернення.");
+            Console.ReadLine();
+        }
+    }
+}
