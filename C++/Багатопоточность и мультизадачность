@@ -1,0 +1,120 @@
+using System;
+using System.Reflection;
+
+class Program
+{
+    static void Main()
+    {
+        Console.Write("Введіть шлях до збірки (.dll): ");
+        string path = Console.ReadLine();
+
+        try
+        {
+            Assembly assembly = Assembly.LoadFrom(path);
+            Type[] types = assembly.GetTypes();
+
+            Console.WriteLine("\nТипи, що містяться у збірці:");
+            foreach (var type in types)
+            {
+                Console.WriteLine(type.FullName);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Помилка: {ex.Message}");
+        }
+
+        Console.WriteLine("\nНатисніть Enter для виходу.");
+        Console.ReadLine();
+    }
+}
+
+using System;
+using System.Reflection;
+
+class MyClass
+{
+    private int number = 10;
+    private string text = "Привіт";
+
+    private void ShowInfo()
+    {
+        Console.WriteLine($"number = {number}, text = {text}");
+    }
+
+    private void MultiplyNumber(int factor)
+    {
+        number *= factor;
+    }
+}
+
+class Program
+{
+    static void Main()
+    {
+        MyClass obj = new MyClass();
+        Type type = typeof(MyClass);
+
+        Console.WriteLine("Поля:");
+        FieldInfo[] fields = type.GetFields(BindingFlags.NonPublic | BindingFlags.Instance);
+        foreach (var field in fields)
+        {
+            Console.WriteLine(field.Name);
+        }
+
+        Console.WriteLine("\nМетоди:");
+        MethodInfo[] methods = type.GetMethods(BindingFlags.NonPublic | BindingFlags.Instance);
+        foreach (var method in methods)
+        {
+            Console.WriteLine(method.Name);
+        }
+
+        FieldInfo numberField = type.GetField("number", BindingFlags.NonPublic | BindingFlags.Instance);
+        numberField.SetValue(obj, 42);
+
+        MethodInfo showInfoMethod = type.GetMethod("ShowInfo", BindingFlags.NonPublic | BindingFlags.Instance);
+        showInfoMethod.Invoke(obj, null);
+
+        Console.WriteLine("\nНатисніть Enter для виходу.");
+        Console.ReadLine();
+    }
+}
+using System;
+using System.Linq;
+using System.Reflection;
+using System.Collections.Generic;
+
+class Program
+{
+    static void Main()
+    {
+        Console.Write("Введіть шлях до збірки (.dll): ");
+        string path = Console.ReadLine();
+
+        try
+        {
+            Assembly assembly = Assembly.LoadFrom(path);
+            Console.WriteLine($"\nІм’я збірки: {assembly.GetName().Name}");
+            Console.WriteLine($"Версія: {assembly.GetName().Version}");
+
+            Type[] types = assembly.GetTypes();
+            var namespaces = types
+                .GroupBy(t => t.Namespace)
+                .OrderBy(g => g.Key);
+
+            Console.WriteLine("\nПростори імен та кількість типів:");
+            foreach (var ns in namespaces)
+            {
+                string name = ns.Key ?? "(Без простору імен)";
+                Console.WriteLine($"{name}: {ns.Count()} типів");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Помилка: {ex.Message}");
+        }
+
+        Console.WriteLine("\nНатисніть Enter для виходу.");
+        Console.ReadLine();
+    }
+}
