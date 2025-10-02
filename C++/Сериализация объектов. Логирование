@@ -1,0 +1,128 @@
+using System;
+using System.IO;
+using System.Text.Json;
+using System.Collections.Generic;
+
+[Serializable]
+public class Fraction
+{
+    public int Numerator { get; set; }
+    public int Denominator { get; set; }
+
+    public override string ToString()
+    {
+        return $"{Numerator}/{Denominator}";
+    }
+}
+
+[Serializable]
+public class Journal
+{
+    public string Title { get; set; }
+    public string Publisher { get; set; }
+    public DateTime ReleaseDate { get; set; }
+    public int Pages { get; set; }
+
+    public override string ToString()
+    {
+        return $"Журнал: {Title}\nИздательство: {Publisher}\nДата выпуска: {ReleaseDate:dd.MM.yyyy}\nСтраниц: {Pages}";
+    }
+}
+
+class Program
+{
+    static void Main()
+    {
+        while (true)
+        {
+            Console.WriteLine("\n==== МЕНЮ ====");
+            Console.WriteLine("1. Работа с массивом дробей");
+            Console.WriteLine("2. Работа с журналом");
+            Console.WriteLine("0. Выход");
+            Console.Write("Ваш выбор: ");
+            string choice = Console.ReadLine();
+
+            switch (choice)
+            {
+                case "1":
+                    WorkWithFractions();
+                    break;
+                case "2":
+                    WorkWithJournal();
+                    break;
+                case "0":
+                    return;
+                default:
+                    Console.WriteLine("Ошибка: неверный выбор.");
+                    break;
+            }
+        }
+    }
+
+    static void WorkWithFractions()
+    {
+        Console.Write("Введите количество дробей: ");
+        int n = int.Parse(Console.ReadLine());
+
+        List<Fraction> fractions = new List<Fraction>();
+
+        for (int i = 0; i < n; i++)
+        {
+            Console.WriteLine($"Дробь {i + 1}:");
+            Console.Write("  Числитель: ");
+            int numerator = int.Parse(Console.ReadLine());
+            Console.Write("  Знаменатель: ");
+            int denominator = int.Parse(Console.ReadLine());
+
+            fractions.Add(new Fraction { Numerator = numerator, Denominator = denominator });
+        }
+
+        string filePath = "fractions.json";
+
+        // Сериализация
+        string json = JsonSerializer.Serialize(fractions, new JsonSerializerOptions { WriteIndented = true });
+        File.WriteAllText(filePath, json);
+        Console.WriteLine("\nМассив дробей сериализован и сохранен в файл.");
+
+        // Десериализация
+        string jsonFromFile = File.ReadAllText(filePath);
+        List<Fraction> loadedFractions = JsonSerializer.Deserialize<List<Fraction>>(jsonFromFile);
+
+        Console.WriteLine("\nЗагруженные дроби из файла:");
+        foreach (var f in loadedFractions)
+        {
+            Console.WriteLine(f);
+        }
+    }
+
+    static void WorkWithJournal()
+    {
+        Journal journal = new Journal();
+
+        Console.Write("Введите название журнала: ");
+        journal.Title = Console.ReadLine();
+
+        Console.Write("Введите название издательства: ");
+        journal.Publisher = Console.ReadLine();
+
+        Console.Write("Введите дату выпуска (гггг-мм-дд): ");
+        journal.ReleaseDate = DateTime.Parse(Console.ReadLine());
+
+        Console.Write("Введите количество страниц: ");
+        journal.Pages = int.Parse(Console.ReadLine());
+
+        string filePath = "journal.json";
+
+        // Сериализация
+        string json = JsonSerializer.Serialize(journal, new JsonSerializerOptions { WriteIndented = true });
+        File.WriteAllText(filePath, json);
+        Console.WriteLine("\nЖурнал сериализован и сохранен в файл.");
+
+        // Десериализация
+        string jsonFromFile = File.ReadAllText(filePath);
+        Journal loadedJournal = JsonSerializer.Deserialize<Journal>(jsonFromFile);
+
+        Console.WriteLine("\nЖурнал, загруженный из файла:");
+        Console.WriteLine(loadedJournal);
+    }
+}
