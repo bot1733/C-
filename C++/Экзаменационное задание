@@ -1,0 +1,229 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Text.Json;
+
+namespace DictionariesApp
+{
+    // Запись: слово + переводы
+    public class DictionaryEntry
+    {
+        public string Word { get; set; }
+        public List<string> Translations { get; set; } = new List<string>();
+    }
+
+    // Словарь (например англо-русский)
+    public class LanguageDictionary
+    {
+        public string Name { get; set; } // Тип словаря: "Англо-Русский"
+        public Dictionary<string, DictionaryEntry> Entries { get; set; } = new Dictionary<string, DictionaryEntry>();
+
+        // Добавить слово
+        public void AddWord(string word, string translation)
+        {
+            if (!Entries.ContainsKey(word))
+            {
+                Entries[word] = new DictionaryEntry { Word = word };
+            }
+            Entries[word].Translations.Add(translation);
+        }
+
+        // Заменить перевод
+        public void ReplaceTranslation(string word, string oldTranslation, string newTranslation)
+        {
+            if (Entries.ContainsKey(word))
+            {
+                int index = Entries[word].Translations.IndexOf(oldTranslation);
+                if (index != -1)
+                {
+                    Entries[word].Translations[index] = newTranslation;
+                }
+            }
+        }
+
+        // Удалить слово целиком
+        public void RemoveWord(string word)
+        {
+            if (Entries.ContainsKey(word))
+                Entries.Remove(word);
+        }
+
+        // Удалить перевод
+        public void RemoveTranslation(string word, string translation)
+        {
+            if (Entries.ContainsKey(word))
+            {
+                var list = Entries[word].Translations;
+                if (list.Count > 1)
+                {
+                    list.Remove(translation);
+                }
+                else
+                {
+                    Console.WriteLine("Нельзя удалить последний перевод!");
+                }
+            }
+        }
+
+        // Поиск слова
+        public List<string> FindTranslation(string word)
+        {
+            if (Entries.ContainsKey(word))
+                return Entries[word].Translations;
+            return null;
+        }
+    }
+
+    // Менеджер для работы с файлами
+    public class DictionaryManager
+    {
+        private const string StorageFolder = "Dictionaries";
+
+        public DictionaryManager()
+        {
+            if (!Directory.Exists(StorageFolder))
+                Directory.CreateDirectory(StorageFolder);
+        }
+
+        public void Save(LanguageDictionary dict)
+        {
+            string path = Path.Combine(StorageFolder, dict.Name + ".json");
+            File.WriteAllText(path, JsonSerializer.Serialize(dict, new JsonSerializerOptions { WriteIndented = true }));
+        }
+
+        public LanguageDictionary Load(string name)
+        {
+            string path = Path.Combine(StorageFolder, name + ".json");
+            if (File.Exists(path))
+            {
+                return JsonSerializer.Deserialize<LanguageDictionary>(File.ReadAllText(path));
+            }
+            return null;
+        }
+
+        public void ExportWord(LanguageDictionary dict, string word)
+        {
+            if (dict.Entries.ContainsKey(word))
+            {
+                string path = Path.Combine(StorageFolder, word + "_export.txt");
+                File.WriteAllLines(path, dict.Entries[word].Translations);
+                Console.WriteLine($"Слово и переводы экспортированы в {path}");
+            }
+        }
+    }
+
+    class Program
+    {
+        static void Main()
+        {
+            var manager = new DictionaryManager();
+            LanguageDictionary currentDict = null;
+
+            while (true)
+            {
+                Console.WriteLine("\n--- МЕНЮ ---");
+                Console.WriteLine("1. Создать словарь");
+                Console.WriteLine("2. Загрузить словарь");
+                Console.WriteLine("3. Добавить слово");
+                Console.WriteLine("4. Заменить перевод");
+                Console.WriteLine("5. Удалить слово");
+                Console.WriteLine("6. Удалить перевод");
+                Console.WriteLine("7. Найти перевод");
+                Console.WriteLine("8. Экспортировать слово");
+                Console.WriteLine("9. Сохранить словарь");
+                Console.WriteLine("0. Выход");
+
+                Console.Write("Ваш выбор: ");
+                string choice = Console.ReadLine();
+
+                switch (choice)
+                {
+                    case "1":
+                        Console.Write("Введите название словаря: ");
+                        string name = Console.ReadLine();
+                        currentDict = new LanguageDictionary { Name = name };
+                        Console.WriteLine($"Словарь \"{name}\" создан.");
+                        break;
+
+                    case "2":
+                        Console.Write("Введите название словаря для загрузки: ");
+                        string loadName = Console.ReadLine();
+                        currentDict = manager.Load(loadName);
+                        if (currentDict != null)
+                            Console.WriteLine("Словарь загружен.");
+                        else
+                            Console.WriteLine("Словарь не найден.");
+                        break;
+
+                    case "3":
+                        if (currentDict == null) { Console.WriteLine("Сначала создайте или загрузите словарь!"); break; }
+                        Console.Write("Введите слово: ");
+                        string word = Console.ReadLine();
+                        Console.Write("Введите перевод: ");
+                        string tr = Console.ReadLine();
+                        currentDict.AddWord(word, tr);
+                        Console.WriteLine("Слово добавлено.");
+                        break;
+
+                    case "4":
+                        if (currentDict == null) break;
+                        Console.Write("Введите слово: ");
+                        string w1 = Console.ReadLine();
+                        Console.Write("Введите старый перевод: ");
+                        string oldTr = Console.ReadLine();
+                        Console.Write("Введите новый перевод: ");
+                        string newTr = Console.ReadLine();
+                        currentDict.ReplaceTranslation(w1, oldTr, newTr);
+                        break;
+
+                    case "5":
+                        if (currentDict == null) break;
+                        Console.Write("Введите слово для удаления: ");
+                        string w2 = Console.ReadLine();
+                        currentDict.RemoveWord(w2);
+                        break;
+
+                    case "6":
+                        if (currentDict == null) break;
+                        Console.Write("Введите слово: ");
+                        string w3 = Console.ReadLine();
+                        Console.Write("Введите перевод для удаления: ");
+                        string delTr = Console.ReadLine();
+                        currentDict.RemoveTranslation(w3, delTr);
+                        break;
+
+                    case "7":
+                        if (currentDict == null) break;
+                        Console.Write("Введите слово для поиска: ");
+                        string w4 = Console.ReadLine();
+                        var result = currentDict.FindTranslation(w4);
+                        if (result != null)
+                            Console.WriteLine("Переводы: " + string.Join(", ", result));
+                        else
+                            Console.WriteLine("Слово не найдено.");
+                        break;
+
+                    case "8":
+                        if (currentDict == null) break;
+                        Console.Write("Введите слово для экспорта: ");
+                        string w5 = Console.ReadLine();
+                        manager.ExportWord(currentDict, w5);
+                        break;
+
+                    case "9":
+                        if (currentDict == null) break;
+                        manager.Save(currentDict);
+                        Console.WriteLine("Словарь сохранён.");
+                        break;
+
+                    case "0":
+                        return;
+
+                    default:
+                        Console.WriteLine("Неверный выбор.");
+                        break;
+                }
+            }
+        }
+    }
+}
