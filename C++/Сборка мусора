@@ -1,0 +1,107 @@
+1.
+using System;
+
+class Play
+{
+    // Свойства
+    public string Title { get; set; }
+    public string Author { get; set; }
+    public string Genre { get; set; }
+    public int Year { get; set; }
+
+    // Конструктор
+    public Play(string title, string author, string genre, int year)
+    {
+        Title = title;
+        Author = author;
+        Genre = genre;
+        Year = year;
+    }
+
+    // Метод для отображения информации
+    public void ShowInfo()
+    {
+        Console.WriteLine($"Название: {Title}, Автор: {Author}, Жанр: {Genre}, Год: {Year}");
+    }
+
+    // Деструктор
+    ~Play()
+    {
+        Console.WriteLine($"Объект Пьеса \"{Title}\" уничтожен.");
+    }
+}
+
+class Program
+{
+    static void Main()
+    {
+        Play play = new Play("Гамлет", "У. Шекспир", "Трагедия", 1603);
+        play.ShowInfo();
+
+        // Принудительный вызов сборщика мусора для теста деструктора
+        play = null;
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
+
+        Console.WriteLine("Программа завершена.");
+    }
+}
+2.
+using System;
+
+class Shop : IDisposable
+{
+    // Свойства
+    public string Name { get; set; }
+    public string Address { get; set; }
+    public string Type { get; set; } // Продовольственный, Хозяйственный, Одежда, Обувь
+
+    private bool disposed = false;
+
+    // Конструктор
+    public Shop(string name, string address, string type)
+    {
+        Name = name;
+        Address = address;
+        Type = type;
+    }
+
+    // Метод для отображения информации
+    public void ShowInfo()
+    {
+        Console.WriteLine($"Магазин: {Name}, Адрес: {Address}, Тип: {Type}");
+    }
+
+    // Метод Dispose
+    public void Dispose()
+    {
+        if (!disposed)
+        {
+            Console.WriteLine($"Ресурсы магазина \"{Name}\" освобождены (Dispose).");
+            disposed = true;
+        }
+        GC.SuppressFinalize(this);
+    }
+
+    // Деструктор
+    ~Shop()
+    {
+        Console.WriteLine($"Магазин \"{Name}\" уничтожен (деструктор).");
+    }
+}
+
+class Program2
+{
+    static void Main()
+    {
+        using (Shop shop = new Shop("АТБ", "г. Киев, ул. Крещатик, 1", "Продовольственный"))
+        {
+            shop.ShowInfo();
+        } // Здесь автоматически вызовется Dispose()
+
+        GC.Collect();
+        GC.WaitForPendingFinalizers();
+
+        Console.WriteLine("Программа завершена.");
+    }
+}
