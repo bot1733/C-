@@ -1,0 +1,83 @@
+using System;
+using System.IO;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+
+class Program
+{
+    static async Task Main()
+    {
+        Console.WriteLine("Введіть шлях до текстового файлу для шифрування:");
+        string inputPath = Console.ReadLine();
+
+        if (!File.Exists(inputPath))
+        {
+            Console.WriteLine("Файл не знайдено!");
+            return;
+        }
+
+        Console.WriteLine("Введіть зсув для шифру Цезаря (ціле число):");
+        if (!int.TryParse(Console.ReadLine(), out int shift))
+        {
+            Console.WriteLine("Некоректне число зсуву!");
+            return;
+        }
+
+        string outputPath = Path.Combine(Path.GetDirectoryName(inputPath),
+                                         Path.GetFileNameWithoutExtension(inputPath) + "_encrypted.txt");
+
+        using CancellationTokenSource cts = new CancellationTokenSource();
+
+        // Потік для відслідковування скасування
+        Task.Run(() =>
+        {
+            Console.WriteLine("Натисніть 'c' для скасування шифрування...");
+            if (Console.ReadKey(true).KeyChar == 'c')
+            {
+                cts.Cancel();
+            }
+        });
+
+        try
+        {
+            await EncryptFileAsync(inputPath, outputPath, shift, cts.Token);
+            Console.WriteLine($"\nШифрування завершено! Зашифрований файл: {outputPath}");
+        }
+        catch (OperationCanceledException)
+        {
+            Console.WriteLine("\nШифрування скасовано користувачем.");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"\nСталася помилка: {ex.Message}");
+        }
+    }
+
+    static async Task EncryptFileAsync(string inputPath, string outputPath, int shift, CancellationToken token)
+    {
+        string text = await File.ReadAllTextAsync(inputPath, token);
+        StringBuilder encrypted = new StringBuilder(text.Length);
+
+        foreach (char c in text)
+        {
+            token.ThrowIfCancellationRequested();
+
+            if (char.IsLetter(c))
+            {
+                char offset = char.IsUpper(c) ? 'A' : 'a';
+                char encryptedChar = (char)(((c + shift - offset) % 26) + offset);
+                encrypted.Append(encryptedChar);
+            }
+            else
+            {
+                encrypted.Append(c);
+            }
+
+            // Симуляція тривалої роботи
+            await Task.Delay(1, token);
+        }
+
+        await File.WriteAllTextAsync(outputPath, encrypted.ToString(), token);
+    }
+}
