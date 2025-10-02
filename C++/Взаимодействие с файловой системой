@@ -1,0 +1,97 @@
+1.
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+
+class Program
+{
+    static void Main()
+    {
+        Random rnd = new Random();
+        List<int> numbers = new List<int>();
+
+        for (int i = 0; i < 100; i++)
+            numbers.Add(rnd.Next(1, 1000));
+
+        var primes = numbers.Where(IsPrime).ToList();
+        var fibs = numbers.Where(IsFibonacci).ToList();
+
+        File.WriteAllLines("primes.txt", primes.Select(x => x.ToString()));
+        File.WriteAllLines("fibonacci.txt", fibs.Select(x => x.ToString()));
+
+        Console.WriteLine($"Всего чисел: {numbers.Count}");
+        Console.WriteLine($"Простых чисел: {primes.Count}");
+        Console.WriteLine($"Чисел Фибоначчи: {fibs.Count}");
+    }
+
+    static bool IsPrime(int n)
+    {
+        if (n < 2) return false;
+        for (int i = 2; i <= Math.Sqrt(n); i++)
+            if (n % i == 0) return false;
+        return true;
+    }
+
+    static bool IsFibonacci(int n)
+    {
+        bool isPerfectSquare(long x) => (long)Math.Sqrt(x) * (long)Math.Sqrt(x) == x;
+        return isPerfectSquare(5L * n * n + 4) || isPerfectSquare(5L * n * n - 4);
+    }
+}
+2.
+using System;
+using System.IO;
+
+class Program
+{
+    static void Main()
+    {
+        Console.Write("Введите путь к файлу: ");
+        string path = Console.ReadLine();
+
+        Console.Write("Введите слово для поиска: ");
+        string searchWord = Console.ReadLine();
+
+        Console.Write("Введите слово для замены: ");
+        string replaceWord = Console.ReadLine();
+
+        string text = File.ReadAllText(path);
+        int count = text.Split(new[] { searchWord }, StringSplitOptions.None).Length - 1;
+
+        text = text.Replace(searchWord, replaceWord);
+
+        File.WriteAllText(path, text);
+
+        Console.WriteLine($"Заменено {count} вхождений слова \"{searchWord}\" на \"{replaceWord}\".");
+    }
+}
+3.
+using System;
+using System.IO;
+using System.Linq;
+
+class Program
+{
+    static void Main()
+    {
+        Console.Write("Введите путь к файлу с текстом: ");
+        string textPath = Console.ReadLine();
+
+        Console.Write("Введите путь к файлу со словами для модерации: ");
+        string wordsPath = Console.ReadLine();
+
+        string text = File.ReadAllText(textPath);
+        string[] badWords = File.ReadAllLines(wordsPath);
+
+        foreach (var word in badWords)
+        {
+            string mask = new string('*', word.Length);
+            text = text.Replace(word, mask);
+        }
+
+        File.WriteAllText("moderated.txt", text);
+
+        Console.WriteLine("Файл отмодерирован. Результат сохранён в moderated.txt");
+    }
+}
