@@ -1,0 +1,77 @@
+using System;
+using System.Linq;
+using System.Threading;
+
+class Program
+{
+    static int[] numbers = new int[1000];
+    static ManualResetEvent generationCompleted = new ManualResetEvent(false);
+
+    static void Main()
+    {
+        Console.WriteLine("Початок роботи програми...\n");
+
+        Thread generatorThread = new Thread(GenerateNumbers);
+        Thread maxThread = new Thread(FindMax);
+        Thread minThread = new Thread(FindMin);
+        Thread avgThread = new Thread(FindAverage);
+
+        // Запускаємо три потоки аналізу (вони чекатимуть подію)
+        maxThread.Start();
+        minThread.Start();
+        avgThread.Start();
+
+        // Запускаємо генератор
+        generatorThread.Start();
+
+        // Очікуємо завершення всіх потоків
+        generatorThread.Join();
+        maxThread.Join();
+        minThread.Join();
+        avgThread.Join();
+
+        Console.WriteLine("\nРоботу завершено.");
+    }
+
+    static void GenerateNumbers()
+    {
+        Random random = new Random();
+
+        for (int i = 0; i < numbers.Length; i++)
+        {
+            numbers[i] = random.Next(0, 5001);
+        }
+
+        Console.WriteLine("Генерування чисел завершено!\n");
+
+        // Сигналізуємо іншим потокам, що дані готові
+        generationCompleted.Set();
+    }
+
+    static void FindMax()
+    {
+        Console.WriteLine("Потік Max очікує завершення генерації...");
+        generationCompleted.WaitOne();
+
+        int max = numbers.Max();
+        Console.WriteLine($"Максимальне число: {max}");
+    }
+
+    static void FindMin()
+    {
+        Console.WriteLine("Потік Min очікує завершення генерації...");
+        generationCompleted.WaitOne();
+
+        int min = numbers.Min();
+        Console.WriteLine($"Мінімальне число: {min}");
+    }
+
+    static void FindAverage()
+    {
+        Console.WriteLine("Потік Average очікує завершення генерації...");
+        generationCompleted.WaitOne();
+
+        double avg = numbers.Average();
+        Console.WriteLine($"Середнє арифметичне: {avg:F2}");
+    }
+}
