@@ -1,0 +1,92 @@
+using System;
+using System.IO;
+using System.Reflection;
+
+class Program
+{
+    static void Main()
+    {
+        Console.WriteLine("Вкажіть шлях до DLL файлу:");
+        string dllPath = Console.ReadLine();
+
+        if (!File.Exists(dllPath))
+        {
+            Console.WriteLine("Файл не знайдено!");
+            return;
+        }
+
+        // 1. Завантажити DLL
+        Assembly assembly = Assembly.LoadFrom(dllPath);
+        Console.WriteLine("DLL успішно завантажено.\n");
+
+        // 2. Вивести список усіх класів
+        Console.WriteLine("Список класів у DLL:");
+        Type[] types = assembly.GetTypes();
+        foreach (var type in types)
+        {
+            if (type.IsClass)
+                Console.WriteLine($" - {type.FullName}");
+        }
+
+        // 3. Знайти клас Person
+        Type? personType = assembly.GetType("Person") 
+                        ?? Array.Find(types, t => t.Name == "Person");
+
+        if (personType == null)
+        {
+            Console.WriteLine("\nКлас Person не знайдено!");
+            return;
+        }
+
+        Console.WriteLine($"\nЗнайдено клас: {personType.FullName}");
+
+        // 4. Створити об’єкт Person через Activator
+        object? person = Activator.CreateInstance(personType, "Іван", "Шевченко", 25);
+        Console.WriteLine("Об’єкт Person створено.\n");
+
+        // 5. Викликати ToString()
+        MethodInfo? toStringMethod = personType.GetMethod("ToString");
+        string? result = toStringMethod?.Invoke(person, null)?.ToString();
+        Console.WriteLine($"Результат ToString(): {result}\n");
+
+        // 6. Вивести всі методи класу Person
+        Console.WriteLine("Методи класу Person:");
+        foreach (var method in personType.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly))
+        {
+            Console.WriteLine($" - {method.Name}");
+        }
+
+        // 7. Вивести всі властивості класу Person
+        Console.WriteLine("\nВластивості класу Person:");
+        foreach (var prop in personType.GetProperties())
+        {
+            Console.WriteLine($" - {prop.Name}");
+        }
+
+        // 8. Отримати значення властивості FirstName
+        var firstNameProp = personType.GetProperty("FirstName");
+        var firstNameValue = firstNameProp?.GetValue(person);
+        Console.WriteLine($"\nFirstName: {firstNameValue}");
+
+        // 9. Встановити нове значення для Age
+        var ageProp = personType.GetProperty("Age");
+        ageProp?.SetValue(person, 30);
+
+        // Знову викликати ToString()
+        string? result2 = toStringMethod?.Invoke(person, null)?.ToString();
+        Console.WriteLine($"Після зміни віку: {result2}\n");
+
+        // 10. Перевірити наявність методу PrintInfo
+        var printInfoMethod = personType.GetMethod("PrintInfo");
+
+        if (printInfoMethod != null)
+        {
+            Console.WriteLine("Метод PrintInfo знайдено. Викликаємо його:");
+            printInfoMethod.Invoke(person, null);
+        }
+        else
+        {
+            Console.WriteLine("Метод PrintInfo не знайдено.");
+        }
+    }
+}
