@@ -1,0 +1,61 @@
+using System;
+using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Diagnostics;
+using System.Collections.Concurrent;
+using System.Linq;
+
+class Program
+{
+    static async Task Main()
+    {
+        Console.WriteLine("Вкажіть шлях до папки:");
+        string folderPath = Console.ReadLine() ?? ".";
+
+        if (!Directory.Exists(folderPath))
+        {
+            Console.WriteLine("Папка не існує!");
+            return;
+        }
+
+        Stopwatch stopwatch = Stopwatch.StartNew();
+
+        string[] files = Directory.GetFiles(folderPath, "*.txt", SearchOption.AllDirectories);
+        Console.WriteLine($"Знайдено {files.Length} файлів для шифрування...\n");
+
+        int completed = 0;
+        ConcurrentBag<Task> tasks = new ConcurrentBag<Task>();
+
+        foreach (var file in files)
+        {
+            ThreadPool.QueueUserWorkItem(_ =>
+            {
+                Console.WriteLine($"Почато шифрування файлу: {Path.GetFileName(file)}");
+
+                Task t = ProcessFileAsync(file).ContinueWith(_ =>
+                {
+                    Interlocked.Increment(ref completed);
+                });
+
+                tasks.Add(t);
+            });
+        }
+
+        await Task.WhenAll(tasks.ToArray());
+
+        stopwatch.Stop();
+        Console.WriteLine($"\nЗавершено! Зашифровано файлів: {completed}");
+        Console.WriteLine($"Загальний час: {stopwatch.ElapsedMilliseconds} мс");
+    }
+
+    static async Task ProcessFileAsync(string path)
+    {
+        string content = File.ReadAllText(path);
+
+        string encrypted = new string(content.Reverse().ToArray());
+
+        string newPath = path + ".enc.txt";
+        await File.WriteAllTextAsync(newPath, encrypted);
+    }
+}
