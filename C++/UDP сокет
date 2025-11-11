@@ -1,0 +1,122 @@
+using System;
+using System.Collections.Generic;
+using System.Net;
+using System.Net.Sockets;
+using System.Text;
+using System.Threading;
+
+class GuessNumberGame
+{
+    static void Main()
+    {
+        Console.OutputEncoding = Encoding.UTF8;
+        Console.WriteLine("1 — Сервер");
+        Console.WriteLine("2 — Клієнт");
+        Console.Write("> ");
+        string choice = Console.ReadLine();
+        if (choice == "1") StartServer();
+        else if (choice == "2") StartClient();
+    }
+
+    static void StartServer()
+    {
+        TcpListener listener = new TcpListener(IPAddress.Any, 5000);
+        listener.Start();
+        Random rand = new Random();
+        int target = rand.Next(1, 101);
+        Console.WriteLine($"[Сервер] Загадане число: {target}");
+        List<TcpClient> clients = new List<TcpClient>();
+        bool gameOver = false;
+        new Thread(() =>
+        {
+            while (!gameOver)
+            {
+                TcpClient client = listener.AcceptTcpClient();
+                clients.Add(client);
+                Console.WriteLine($"Новий гравець: {client.Client.RemoteEndPoint}");
+                new Thread(() => HandleClient(client, target, clients, ref gameOver)).Start();
+            }
+        }).Start();
+        while (!gameOver) Thread.Sleep(200);
+        listener.Stop();
+    }
+
+    static void HandleClient(TcpClient client, int target, List<TcpClient> clients, ref bool gameOver)
+    {
+        NetworkStream stream = client.GetStream();
+        byte[] buffer = new byte[1024];
+        while (!gameOver)
+        {
+            try
+            {
+                int bytesRead = stream.Read(buffer, 0, buffer.Length);
+                if (bytesRead == 0) break;
+                string msg = Encoding.UTF8.GetString(buffer, 0, bytesRead);
+                if (!int.TryParse(msg, out int guess)) continue;
+                string response;
+                if (guess < target) response = "Мало!";
+                else if (guess > target) response = "Багато!";
+                else
+                {
+                    response = "Вгадав!";
+                    string winnerMsg = $"Гравець {client.Client.RemoteEndPoint} переміг!";
+                    Broadcast(winnerMsg, clients);
+                    Console.WriteLine(winnerMsg);
+                    gameOver = true;
+                }
+                byte[] respBytes = Encoding.UTF8.GetBytes(response);
+                stream.Write(respBytes, 0, respBytes.Length);
+            }
+            catch { break; }
+        }
+        client.Close();
+    }
+
+    static void Broadcast(string message, List<TcpClient> clients)
+    {
+        byte[] data = Encoding.UTF8.GetBytes(message);
+        foreach (var c in clients)
+        {
+            try { c.GetStream().Write(data, 0, data.Length); } catch { }
+        }
+    }
+
+    static void StartClient()
+    {
+        try
+        {
+            Console.Write("IP сервера: ");
+            string ip = Console.ReadLine();
+            TcpClient client = new TcpClient(ip, 5000);
+            NetworkStream stream = client.GetStream();
+            Console.WriteLine("Підключено до сервера!");
+            new Thread(() =>
+            {
+                byte[] buffer = new byte[1024];
+                while (true)
+                {
+                    try
+                    {
+                        int bytes = stream.Read(buffer, 0, buffer.Length);
+                        if (bytes == 0) break;
+                        string msg = Encoding.UTF8.GetString(buffer, 0, bytes);
+                        Console.WriteLine("[Сервер]: " + msg);
+                        if (msg.Contains("переміг")) Environment.Exit(0);
+                    }
+                    catch { break; }
+                }
+            }).Start();
+            while (true)
+            {
+                Console.Write("Твоє число: ");
+                string guess = Console.ReadLine();
+                byte[] data = Encoding.UTF8.GetBytes(guess);
+                stream.Write(data, 0, data.Length);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Помилка: " + ex.Message);
+        }
+    }
+}
