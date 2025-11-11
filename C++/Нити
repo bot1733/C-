@@ -1,0 +1,91 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Text;
+using System.Threading;
+
+class Program
+{
+    static void Main()
+    {
+        Console.OutputEncoding = Encoding.UTF8;
+        Console.WriteLine("1 — Потік ToString()");
+        Console.WriteLine("2 — Клас Bank");
+        Console.WriteLine("3 — Гра «Встиг — Не встиг»");
+        Console.Write("> ");
+        string c = Console.ReadLine();
+        if (c == "1") Task1();
+        else if (c == "2") Task2();
+        else if (c == "3") Task3();
+    }
+
+    static void Task1()
+    {
+        List<object> items = new List<object> { 123, 45.6, "Hello", DateTime.Now };
+        Thread t = new Thread(() =>
+        {
+            foreach (var x in items) Console.WriteLine(x.ToString());
+        });
+        t.Start();
+        t.Join();
+    }
+
+    static void Task2()
+    {
+        Bank b = new Bank("Mono", 1000, 10);
+        b.Money = 1500;
+        b.Percent = 15;
+        b.Name = "Privat";
+        Console.WriteLine("Зміни записано у файл bank_log.txt");
+        Thread.Sleep(500);
+    }
+
+    static void Task3()
+    {
+        Console.WriteLine("Коли побачиш слово 'GO' — натисни будь-яку клавішу!");
+        Random r = new Random();
+        Thread.Sleep(r.Next(1000, 4000));
+        Console.WriteLine("GO!");
+        DateTime start = DateTime.Now;
+        Console.ReadKey(true);
+        double ms = (DateTime.Now - start).TotalMilliseconds;
+        Console.WriteLine($"Реакція: {ms} мс");
+    }
+}
+
+class Bank
+{
+    private int money;
+    private string name;
+    private int percent;
+    public int Money
+    {
+        get => money;
+        set { money = value; Log(); }
+    }
+    public string Name
+    {
+        get => name;
+        set { name = value; Log(); }
+    }
+    public int Percent
+    {
+        get => percent;
+        set { percent = value; Log(); }
+    }
+
+    public Bank(string n, int m, int p)
+    {
+        name = n; money = m; percent = p;
+        Log();
+    }
+
+    void Log()
+    {
+        new Thread(() =>
+        {
+            string text = $"{DateTime.Now}: Name={name}, Money={money}, Percent={percent}";
+            File.AppendAllText("bank_log.txt", text + Environment.NewLine, Encoding.UTF8);
+        }).Start();
+    }
+}
