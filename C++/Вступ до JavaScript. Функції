@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>JS Tasks</title>
+</head>
+<body>
+  <h1>Hello World</h1>
+
+  <script>
+    // Задание 1
+    function compareNumbers(a, b) {
+      if (a < b) return -1;
+      else if (a > b) return 1;
+      else return 0;
+    }
+    console.log(compareNumbers(5, 10));
+
+    // Задание 2
+    function factorial(n) {
+      let res = 1;
+      for (let i = 1; i <= n; i++) {
+        res = res * i;
+      }
+      return res;
+    }
+    console.log(factorial(5));
+
+    // Задание 3
+    function makeNumber(a, b, c) {
+      return a * 100 + b * 10 + c;
+    }
+    console.log(makeNumber(1, 4, 9));
+
+    // Задание 4
+    function rectangleArea(a, b) {
+      if (b === undefined) {
+        return a * a;
+      } else {
+        return a * b;
+      }
+    }
+    console.log(rectangleArea(5));
+    console.log(rectangleArea(5, 10));
+
+    // Задание 5
+    function isPerfectNumber(num) {
+      let sum = 0;
+      for (let i = 1; i < num; i++) {
+        if (num % i === 0) sum += i;
+      }
+      return sum === num;
+    }
+    console.log(isPerfectNumber(28));
+
+    // Задание 6
+    function perfectNumbersInRange(min, max) {
+      let arr = [];
+      for (let i = min; i <= max; i++) {
+        if (isPerfectNumber(i)) arr.push(i);
+      }
+      return arr;
+    }
+    console.log(perfectNumbersInRange(1, 10000));
+
+    // Задание 7
+    function formatTime(h, m, s) {
+      if (m === undefined) m = 0;
+      if (s === undefined) s = 0;
+      if (h < 10) h = "0" + h;
+      if (m < 10) m = "0" + m;
+      if (s < 10) s = "0" + s;
+      return h + ":" + m + ":" + s;
+    }
+    console.log(formatTime(5, 7));
+
+    // Задание 8
+    function timeToSeconds(h, m, s) {
+      return h * 3600 + m * 60 + s;
+    }
+    console.log(timeToSeconds(1, 1, 1));
+
+    // Задание 9
+    function secondsToTime(sec) {
+      let h = Math.floor(sec / 3600);
+      let m = Math.floor((sec % 3600) / 60);
+      let s = sec % 60;
+      return formatTime(h, m, s);
+    }
+    console.log(secondsToTime(3661));
+
+    // Задание 10
+    function dateDifference(h1, m1, s1, h2, m2, s2) {
+      let t1 = timeToSeconds(h1, m1, s1);
+      let t2 = timeToSeconds(h2, m2, s2);
+      let diff = Math.abs(t1 - t2);
+      return secondsToTime(diff);
+    }
+    console.log(dateDifference(12, 0, 0, 14, 30, 0));
+  </script>
+</body>
+</html>
