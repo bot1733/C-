@@ -1,0 +1,127 @@
+using System;
+using System.Collections.Generic;
+using System.Net;
+using System.Net.Sockets;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace SimpleChat
+{
+    class Program
+    {
+        static async Task Main(string[] args)
+        {
+            Console.WriteLine("Виберіть режим: 1 - Сервер, 2 - Клієнт");
+            string mode = Console.ReadLine();
+
+            if (mode == "1")
+            {
+                await ChatServer.StartServer();
+            }
+            else if (mode == "2")
+            {
+                Console.Write("Ваш юзернейм: ");
+                string username = Console.ReadLine();
+                await ChatClient.StartClient(username);
+            }
+        }
+    }
+
+    public static class ChatServer
+    {
+        private static List<string> messages = new List<string>();
+
+        public static async Task StartServer()
+        {
+            TcpListener listener = new TcpListener(IPAddress.Any, 8888);
+            listener.Start();
+            Console.WriteLine("Сервер запущено...");
+
+            while (true)
+            {
+                TcpClient client = await listener.AcceptTcpClientAsync();
+                _ = HandleClient(client);
+            }
+        }
+
+        private static async Task HandleClient(TcpClient client)
+        {
+            NetworkStream stream = client.GetStream();
+            byte[] buffer = new byte[1024];
+
+            int bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length);
+            string username = Encoding.UTF8.GetString(buffer, 0, bytesRead).Trim();
+            Console.WriteLine($"{username} підключився");
+
+            while (true)
+            {
+                try
+                {
+                    bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length);
+                    if (bytesRead == 0) break;
+
+                    string message = Encoding.UTF8.GetString(buffer, 0, bytesRead).Trim();
+
+                    if (message == "GET_MESSAGES")
+                    {
+                        foreach (var msg in messages)
+                        {
+                            byte[] data = Encoding.UTF8.GetBytes(msg + "\n");
+                            await stream.WriteAsync(data, 0, data.Length);
+                        }
+                    }
+                    else
+                    {
+                        string formatted = $"[{username}]: {message}";
+                        messages.Add(formatted);
+                        Console.WriteLine(formatted);
+                    }
+                }
+                catch
+                {
+                    break;
+                }
+            }
+
+            Console.WriteLine($"{username} відключився");
+            client.Close();
+        }
+    }
+
+    public static class ChatClient
+    {
+        public static async Task StartClient(string username)
+        {
+            TcpClient client = new TcpClient();
+            await client.ConnectAsync("127.0.0.1", 8888);
+            NetworkStream stream = client.GetStream();
+
+          
+            byte[] data = Encoding.UTF8.GetBytes(username);
+            await stream.WriteAsync(data, 0, data.Length);
+
+            while (true)
+            {
+                Console.Write("Введіть повідомлення (або 'update'): ");
+                string msg = Console.ReadLine();
+
+                if (msg.ToLower() == "update")
+                {
+                    byte[] request = Encoding.UTF8.GetBytes("GET_MESSAGES");
+                    await stream.WriteAsync(request, 0, request.Length);
+
+                    byte[] buffer = new byte[4096];
+                    int bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length);
+                    string response = Encoding.UTF8.GetString(buffer, 0, bytesRead);
+                    Console.WriteLine("---- Повідомлення ----");
+                    Console.WriteLine(response);
+                }
+                else
+                {
+                    byte[] message = Encoding.UTF8.GetBytes(msg);
+                    await stream.WriteAsync(message, 0, message.Length);
+                }
+            }
+        }
+    }
+}
