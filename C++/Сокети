@@ -1,0 +1,127 @@
+using System;
+using System.IO;
+using System.Net;
+using System.Net.Sockets;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
+namespace FileChatApp
+{
+    class Program
+    {
+        [STAThread]
+        static async Task Main(string[] args)
+        {
+            Console.WriteLine("Виберіть режим: 1 - Сервер, 2 - Клієнт");
+            string mode = Console.ReadLine();
+
+            if (mode == "1")
+            {
+                await FileServer.StartServer();
+            }
+            else if (mode == "2")
+            {
+                Application.Run(new FileClientForm());
+            }
+        }
+    }
+
+    public static class FileServer
+    {
+        public static async Task StartServer()
+        {
+            TcpListener listener = new TcpListener(IPAddress.Any, 8888);
+            listener.Start();
+            Console.WriteLine("Сервер запущено...");
+
+            while (true)
+            {
+                TcpClient client = await listener.AcceptTcpClientAsync();
+                _ = HandleClient(client);
+            }
+        }
+
+        private static async Task HandleClient(TcpClient client)
+        {
+            NetworkStream stream = client.GetStream();
+            byte[] buffer = new byte[1024];
+
+            try
+            {
+                int bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length);
+                string filePath = Encoding.UTF8.GetString(buffer, 0, bytesRead).Trim();
+                Console.WriteLine($"Отримано шлях: {filePath}");
+
+                string content;
+                if (File.Exists(filePath))
+                {
+                    content = File.ReadAllText(filePath);
+                }
+                else
+                {
+                    content = "Файл не знайдено!";
+                }
+
+                byte[] response = Encoding.UTF8.GetBytes(content);
+                await stream.WriteAsync(response, 0, response.Length);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Помилка: " + ex.Message);
+            }
+            finally
+            {
+                client.Close();
+            }
+        }
+    }
+
+    public class FileClientForm : Form
+    {
+        private TextBox txtPath;
+        private Button btnSend;
+        private TextBox txtContent;
+
+        public FileClientForm()
+        {
+            Text = "File Client";
+            Width = 420; Height = 320;
+
+            txtPath = new TextBox { Left = 10, Top = 10, Width = 300 };
+            btnSend = new Button { Left = 320, Top = 10, Text = "Відправити" };
+            txtContent = new TextBox { Left = 10, Top = 50, Width = 380, Height = 200, Multiline = true, ScrollBars = ScrollBars.Vertical };
+
+            btnSend.Click += async (s, e) => await SendPath(txtPath.Text);
+
+            Controls.Add(txtPath);
+            Controls.Add(btnSend);
+            Controls.Add(txtContent);
+        }
+
+        private async Task SendPath(string path)
+        {
+            try
+            {
+                TcpClient client = new TcpClient();
+                await client.ConnectAsync("127.0.0.1", 8888);
+                NetworkStream stream = client.GetStream();
+
+                byte[] data = Encoding.UTF8.GetBytes(path);
+                await stream.WriteAsync(data, 0, data.Length);
+
+                byte[] buffer = new byte[8192];
+                int bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length);
+                string response = Encoding.UTF8.GetString(buffer, 0, bytesRead);
+
+                txtContent.Text = response;
+
+                client.Close();
+            }
+            catch (Exception ex)
+            {
+                txtContent.Text = "Помилка: " + ex.Message;
+            }
+        }
+    }
+}
