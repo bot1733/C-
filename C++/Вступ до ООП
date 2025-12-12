@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Homework</title>
+</head>
+<body>
+<script>
+// 1 Завдання
+class Marker {
+    constructor(color, inkAmount) {
+        this.color = color;
+        this.inkAmount = inkAmount;
+    }
+    print(text) {
+        let result = "";
+        for (let char of text) {
+            if (this.inkAmount <= 0) break;
+            if (char !== " ") this.inkAmount -= 0.5;
+            result += char;
+        }
+        document.write(`<span style="color:${this.color}">${result}</span><br>`);
+    }
+}
+class RefillingMarker extends Marker {
+    refill(amount) {
+        this.inkAmount = Math.min(this.inkAmount + amount, 100);
+    }
+}
+let marker = new Marker("blue", 10);
+marker.print("Hello World!");
+let refillMarker = new RefillingMarker("red", 5);
+refillMarker.print("JavaScript OOP Example");
+refillMarker.refill(50);
+refillMarker.print("After refill we can write more text!");
+
+ // 2 Завдання
+class ExtendedDate extends Date {
+    getTextDate() {
+        const months = [
+            "January","February","March","April","May","June",
+            "July","August","September","October","November","December"
+        ];
+        return `${this.getDate()} ${months[this.getMonth()]}`;
+    }
+    isFutureOrPresent() {
+        const now = new Date();
+        return this >= now;
+    }
+    isLeapYear() {
+        const year = this.getFullYear();
+        return (year % 4 === 0 && year % 100 !== 0) || (year % 400 === 0);
+    }
+    getNextDate() {
+        let next = new Date(this);
+        next.setDate(this.getDate() + 1);
+        return next;
+    }
+}
+let myDate = new ExtendedDate(2025, 11, 12);
+document.write("Date as text: " + myDate.getTextDate() + "<br>");
+document.write("Future or present? " + myDate.isFutureOrPresent() + "<br>");
+document.write("Leap year? " + myDate.isLeapYear() + "<br>");
+document.write("Next date: " + myDate.getNextDate() + "<br>");
+
+// 3 Завдання
+class Employee {
+    constructor(name, position, age) {
+        this.name = name;
+        this.position = position;
+        this.age = age;
+    }
+}
+class EmpTable {
+    constructor(employees) {
+        this.employees = employees;
+    }
+    getHtml() {
+        let html = "<table border='1' cellspacing='0' cellpadding='5'>";
+        html += "<tr><th>Name</th><th>Position</th><th>Age</th></tr>";
+        for (let emp of this.employees) {
+            html += `<tr><td>${emp.name}</td><td>${emp.position}</td><td>${emp.age}</td></tr>`;
+        }
+        html += "</table>";
+        return html;
+    }
+}
+let employees = [
+    new Employee("John", "Cashier", 25),
+    new Employee("Mary", "Manager", 30),
+    new Employee("Alex", "Security", 40)
+];
+let empTable = new EmpTable(employees);
+document.write(empTable.getHtml());
+
+// 4 Завдання
+class StyledEmpTable extends EmpTable {
+    getStyles() {
+        return `
+        <style>
+            table {
+                border-collapse: collapse;
+                width: 50%;
+                margin: 10px 0;
+                font-family: Arial, sans-serif;
+            }
+            th {
+                background-color: #4CAF50;
+                color: white;
+                padding: 8px;
+            }
+            td {
+                border: 1px solid #ddd;
+                padding: 8px;
+                text-align: center;
+            }
+            tr:nth-child(even) {background-color: #f2f2f2;}
+        </style>
+        `;
+    }
+    getHtml() {
+        return this.getStyles() + super.getHtml();
+    }
+}
+let styledTable = new StyledEmpTable(employees);
+document.write(styledTable.getHtml());
+</script>
+</body>
+</html>
