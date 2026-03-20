@@ -1,0 +1,82 @@
+// src/App.js
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+
+const API = "http://localhost:3000/books";
+
+function App() {
+  const [books, setBooks] = useState([]);
+  const [form, setForm] = useState({
+    title: "",
+    author: "",
+    img: "",
+    price: "",
+    description: ""
+  });
+
+  const loadBooks = async () => {
+    const res = await axios.get(API);
+    setBooks(res.data);
+  };
+
+  useEffect(() => {
+    loadBooks();
+  }, []);
+
+  const handleChange = (e) => {
+    setForm({
+      ...form,
+      [e.target.name]: e.target.value
+    });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    const newBook = {
+      ...form,
+      price: Number(form.price),
+      isExist: true
+    };
+
+    await axios.post(API, newBook);
+
+    setForm({
+      title: "",
+      author: "",
+      img: "",
+      price: "",
+      description: ""
+    });
+
+    loadBooks();
+  };
+
+  return (
+    <div>
+      <h1>Книги</h1>
+
+      <form onSubmit={handleSubmit}>
+        <input name="title" value={form.title} onChange={handleChange} placeholder="Название" />
+        <input name="author" value={form.author} onChange={handleChange} placeholder="Автор" />
+        <input name="img" value={form.img} onChange={handleChange} placeholder="Картинка" />
+        <input name="price" type="number" value={form.price} onChange={handleChange} placeholder="Цена" />
+        <textarea name="description" value={form.description} onChange={handleChange} placeholder="Описание" />
+        <button type="submit">Добавить</button>
+      </form>
+
+      <div>
+        {books.map((book) => (
+          <div key={book.id}>
+            <h3>{book.title}</h3>
+            <p>{book.author}</p>
+            <img src={book.img} width="100" alt="" />
+            <p>{book.price}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export default App;
